@@ -1,5 +1,10 @@
-package au.edu.sydney.soft3202.task1;
-import org.junit.jupiter.api.Assertions.assertThrows;
+Spackage task1;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 
 class ShoppingBasketTest{
     ShoppingBasket sb;
@@ -22,24 +27,56 @@ class ShoppingBasketTest{
     }
 
     @Test
-    public void incorrectNumber1(){
+    public void incorrectNumberAdd1(){
         assertThrows(IllegalArgumentException.class, () -> this.sb.addItem("apple", 0));
     }
 
     @Test
-    public void incorrectNumber2(){
+    public void incorrectNumberAdd2(){
         assertThrows(IllegalArgumentException.class, () -> this.sb.addItem("apple", -1));
     }
 
     //removeItem() tests
     @Test
-    public void itemNotFound(){
-        assertEquals(False, () -> this.sb.removeItem("apple", 1));
+    public void correctRemove(){
+        this.sb.addItem("apple", 1);
+        assertTrue(this.sb.removeItem("apple", 1));
     }
 
     @Test
-    public void incorrectNumber2(){
+    public void itemNotInBasketRemove(){
+        assertFalse(this.sb.removeItem("apple", 1));
+    }
+
+    @Test
+    public void itemNotInBasketRemove(){
+        assertFalse(this.sb.removeItem("some other fruit", 1));
+    }
+
+    @Test
+    public void moreThanInBasketRemove(){
         this.sb.addItem("apple", 1);
-        assertThrows(IllegalArgumentException.class, () -> this.sb.removeItem("apple", 1));
+        assertFalse(this.sb.removeItem("apple", 2));
+    }
+
+    @Test
+    public void incorrectNumberRemove1(){
+        this.sb.addItem("apple", 1);//Don't know if it will check name or number first, so have to add first
+        assertThrows(IllegalArgumentException.class, () -> this.sb.removeItem("apple", 0));
+    }
+
+    @Test
+    public void incorrectNumberRemove2(){
+        this.sb.addItem("apple", 1);
+        assertThrows(IllegalArgumentException.class, () -> this.sb.removeItem("apple", -1));
+    }
+
+    //getItems() tests
+    @Test
+    public void correctGetItems(){
+        this.sb.addItem("apple", 1);
+        List<javafx.util.Pair<String,Integer>> items = this.sb.getItems();
+        assertEquals(items[0].getKey(), "apple");
+        assertEquals(items[0].getValue(), 1);
     }
 }
