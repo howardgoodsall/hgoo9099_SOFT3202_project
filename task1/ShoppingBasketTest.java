@@ -128,12 +128,19 @@ class ShoppingBasketTest{
     public void nullGetValue1() {
         assertNull(this.sb.getValue());
     }
-
+    
     @Test
-    public void nullGetValue2() {
+    public void getValueAddTwice() {
+        this.sb.addItem("apple", 1);
+        this.sb.addItem("apple", 1);
+        assertEquals(5.0, this.sb.getValue());
+    }
+    
+    @Test
+    public void getValueAddRem() {
         this.sb.addItem("apple", 1);
         this.sb.removeItem("apple", 1);
-        assertNull(this.sb.getValue());
+        assertEquals(5.0, this.sb.getValue());
     }
 
     //clear() tests
@@ -141,14 +148,6 @@ class ShoppingBasketTest{
     public void correctClear() {
         this.sb.addItem("apple", 1);
         this.sb.clear();
-        assertEquals(0, this.sb.getValue());
-    }
-
-    @Test
-    public void correctClearAddRem() {
-        this.sb.addItem("apple", 1);
-        this.sb.removeItem("apple", 1);
-        this.sb.clear();
-        assertEquals(null, this.sb.getValue());
+        assertNull(this.sb.getValue());
     }
 }
