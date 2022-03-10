@@ -1,4 +1,4 @@
-package task1;
+package au.edu.sydney.soft3202.task1;
 
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
