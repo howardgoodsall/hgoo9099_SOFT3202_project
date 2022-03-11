@@ -140,7 +140,7 @@ class ShoppingBasketTest{
     public void getValueAddRem() {
         this.sb.addItem("apple", 1);
         this.sb.removeItem("apple", 1);
-        assertEquals(5.0, this.sb.getValue());
+        assertEquals(null, this.sb.getValue());
     }
 
     //clear() tests
