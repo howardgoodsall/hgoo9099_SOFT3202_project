@@ -139,6 +139,13 @@ class ShoppingBasketTest{
     @Test
     public void getValueAddRem() {
         this.sb.addItem("apple", 1);
+        this.sb.addItem("apple", 1);
+        assertEquals(5.0, this.sb.getValue());
+    }
+
+    @Test
+    public void getValueAddRem() {
+        this.sb.addItem("apple", 1);
         this.sb.removeItem("apple", 1);
         assertNull(this.sb.getValue());
     }
