@@ -147,6 +147,6 @@ public class BSFacadeImplTest {
     public void addProjectOvrRtUnderTen(){
         this.bsfi.injectAuth(this.authenMod, this.authorMod);
         this.bsfi.login("user", "password");
-        assertThrows(IllegalArgumentException.class,() -> this.bsfi.addProject(null, "client", 10.0, 11.0));
+        assertThrows(IllegalArgumentException.class,() -> this.bsfi.addProject("name", "client", 10.0, 11.0));
     }
 }
