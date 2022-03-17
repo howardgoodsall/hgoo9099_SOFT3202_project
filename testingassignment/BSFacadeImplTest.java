@@ -1,10 +1,10 @@
 package au.edu.sydney.soft3202.reynholm.erp.billingsystem;
 
-import au.edu.sydney.soft3202.reynholm.erp.cheatmodule;
-import au.edu.sydney.soft3202.reynholm.erp.client;
-import au.edu.sydney.soft3202.reynholm.erp.compliance;
-import au.edu.sydney.soft3202.reynholm.erp.permissions;
-import au.edu.sydney.soft3202.reynholm.erp.project;
+import au.edu.sydney.soft3202.reynholm.erp.cheatmodule.*;
+import au.edu.sydney.soft3202.reynholm.erp.client.*;
+import au.edu.sydney.soft3202.reynholm.erp.compliance.*;
+import au.edu.sydney.soft3202.reynholm.erp.permissions.*;
+import au.edu.sydney.soft3202.reynholm.erp.project.*;
 
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -98,5 +98,55 @@ public class BSFacadeImplTest {
         this.bsfi.login("user", "password");
         this.bsfi.logout();
         assertThrows(IllegalStateException.class,() -> this.bsfi.logout());
+    }
+
+    //addProject Tests
+    @Test
+    public void addProjectNullName(){
+        this.bsfi.injectAuth(this.authenMod, this.authorMod);
+        this.bsfi.login("user", "password");
+        assertThrows(IllegalArgumentException.class,() -> this.bsfi.addProject(null, "client", 1.0, 2.0));
+    }
+
+    @Test
+    public void addProjectNullClient(){
+        this.bsfi.injectAuth(this.authenMod, this.authorMod);
+        this.bsfi.login("user", "password");
+        assertThrows(IllegalArgumentException.class,() -> this.bsfi.addProject("name", null, 1.0, 2.0));
+    }
+
+    @Test
+    public void addProjectEmptyName(){
+        this.bsfi.injectAuth(this.authenMod, this.authorMod);
+        this.bsfi.login("user", "password");
+        assertThrows(IllegalArgumentException.class,() -> this.bsfi.addProject("", "client", 1.0, 2.0));
+    }
+
+    @Test
+    public void addProjectEmptyClient(){
+        this.bsfi.injectAuth(this.authenMod, this.authorMod);
+        this.bsfi.login("user", "password");
+        assertThrows(IllegalArgumentException.class,() -> this.bsfi.addProject("name", "", 1.0, 2.0));
+    }
+
+    @Test
+    public void addProjectLowStdRt(){
+        this.bsfi.injectAuth(this.authenMod, this.authorMod);
+        this.bsfi.login("user", "password");
+        assertThrows(IllegalArgumentException.class,() -> this.bsfi.addProject(null, "client", 0.1, 2.0));
+    }
+
+    @Test
+    public void addProjectLowOvrRt(){
+        this.bsfi.injectAuth(this.authenMod, this.authorMod);
+        this.bsfi.login("user", "password");
+        assertThrows(IllegalArgumentException.class,() -> this.bsfi.addProject(null, "client", 1.0, 0.1));
+    }
+
+    @Test
+    public void addProjectOvrRtUnderTen(){
+        this.bsfi.injectAuth(this.authenMod, this.authorMod);
+        this.bsfi.login("user", "password");
+        assertThrows(IllegalArgumentException.class,() -> this.bsfi.addProject(null, "client", 10.0, 11.0));
     }
 }
