@@ -30,10 +30,8 @@ public class SpaceTraderApp extends Application {
         }
         if (params.get(0).equalsIgnoreCase("online")) {
             this.apiComm = new APICommOnline();
-            System.out.println("Online");
         } else if (params.get(0).equalsIgnoreCase("offline")) {
             this.apiComm = new APICommOffline();
-            System.out.println("Offline");
         } else {
             return;
         }
@@ -48,7 +46,7 @@ public class SpaceTraderApp extends Application {
 
         VBox vBox = windowHandle.getVBox();
 
-        Scene scene = new Scene(vBox, 600, 400);
+        Scene scene = new Scene(vBox, 800, 800);
         primaryStage.setScene(scene);
         primaryStage.setTitle("Space Traders");
         primaryStage.show();

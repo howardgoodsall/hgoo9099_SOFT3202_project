@@ -8,11 +8,15 @@ public class User {
     private String username;
 
     public User(String username, int credits, String joinedAt, int shipCount, int structureCount) {
+        this.username = username;
         this.credits = credits;
         this.joinedAt = joinedAt;
         this.shipCount = shipCount;
         this.structureCount = structureCount;
-        this.username = username;
+    }
+
+    public User(int credits) {
+        this.credits = credits;
     }
 
     public int getCredits() {
@@ -33,17 +37,5 @@ public class User {
 
     public String getUsername() {
         return this.username;
-    }
-}
-
-public class UserWrapper {
-    private User user;
-
-    public UserWrapper(User user) {
-        
-    }
-
-    public User getUser() {
-        return this.user;
     }
 }
