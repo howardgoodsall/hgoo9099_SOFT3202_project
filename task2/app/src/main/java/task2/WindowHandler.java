@@ -86,14 +86,17 @@ public class WindowHandler {
     public void login() {
         TextField login = new TextField();
         Button loginButton = new Button();
-        Label loginUpLabel = new Label("");
+        Label loginLabel = new Label("");
         this.loginHBox = new HBox();
         this.loginHBox.getChildren().add(login);
         this.loginHBox.getChildren().add(loginButton);
+        this.loginHBox.getChildren().add(loginLabel);
         loginButton.setText("Login");
         loginButton.setOnAction((event) -> {
             if(this.apiComm.login(login.getText()) != null){
                 loginSuccess();
+            } else {
+                loginLabel.setText("Incorrect Token");
             }
         });
         this.vBox.getChildren().add(this.loginHBox);
@@ -369,11 +372,11 @@ public class WindowHandler {
                 if(shipsWrap != null) {
                     List<Ship> ships = shipsWrap.getShips();
 
-                    if(this.userShips > 0) {
-                        if(this.shipCount >= this.userShips && this.shipCount > 0) {
-                            this.shipCount = this.userShips-1;
+                    if(ships.size() > 0) {
+                        if(this.shipCount >= ships.size()) {
+                            this.shipCount = 0;
                         }
-                        availableLabel.setText(String.format("%d/%d",(this.shipCount+1),this.userShips));
+                        availableLabel.setText(String.format("%d",(this.shipCount+1)));
                         Ship ship = ships.get(this.shipCount);//Show one ship at a time
                         String shipInfo = String.format("\nClass: %s\nManufacturer: %s\nMaximum Cargo: %d\nPlating: %d\nSpeed: %d\nType: %s\nWeapons: %d\nPurchase Locations:\n",
                             ship.getShipClass(), ship.getManufacturer(),
@@ -388,7 +391,7 @@ public class WindowHandler {
                         prevButton.setOnAction((event2) -> {
                             if(this.shipCount > 0) {
                                 this.shipCount--;
-                                availableLabel.setText(String.format("%d/%d",(this.shipCount+1),this.userShips));
+                                availableLabel.setText(String.format("%d",(this.shipCount+1)));
                                 Ship ship1 = ships.get(this.shipCount);//Show one ship at a time
                                 String shipInfo1 = String.format("\nClass: %s\nManufacturer: %s\nMaximum Cargo: %d\nPlating: %d\nSpeed: %d\nType: %s\nWeapons: %d\nPurchase Locations:\n",
                                     ship1.getShipClass(), ship1.getManufacturer(),
@@ -404,7 +407,7 @@ public class WindowHandler {
                         nextButton.setOnAction((event4) -> {
                             if(this.shipCount+1 < this.userShips) {
                                 this.shipCount++;
-                                availableLabel.setText(String.format("%d/%d",(this.shipCount+1),this.userShips));
+                                availableLabel.setText(String.format("%d",(this.shipCount+1)));
                                 Ship ship2 = ships.get(this.shipCount);//Show one ship at a time
                                 String shipInfo2 = String.format("\nClass: %s\nManufacturer: %s\nMaximum Cargo: %d\nPlating: %d\nSpeed: %d\nType: %s\nWeapons: %d\nPurchase Locations:\n",
                                     ship2.getShipClass(), ship2.getManufacturer(),
