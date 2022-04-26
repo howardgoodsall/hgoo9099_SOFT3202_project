@@ -58,16 +58,20 @@ public class GameWindow {
         TextInputDialog textInput = new TextInputDialog();
         textInput.setTitle("Enter Username");
         textInput.setHeaderText("Enter Username");
-        textInput.showAndWait();
-        String inp = textInput.getEditor().getText();
-        if(!inp.equalsIgnoreCase("null")) {//Pre-emptive null check
-            model.enterUsername(inp);
+        Optional<String> result = textInput.showAndWait();
+        if(result.isPresent()) {
+            String inp = textInput.getEditor().getText();
+            if(!inp.equalsIgnoreCase("null") && !inp.equalsIgnoreCase("")) {//Pre-emptive null check
+                model.enterUsername(inp);
+            } else {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Username Error");
+                alert.setHeaderText("That username is not allowed");
+                alert.showAndWait();
+                return;
+            }
         } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Username Error");
-            alert.setHeaderText("That username is not allowed");
-            alert.showAndWait();
-            return;
+            System.exit(0);
         }
     }
 
