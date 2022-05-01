@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import javafx.geometry.Insets;
 import org.controlsfx.control.WorldMapView;
 
+/**
+ * View handler class
+ */
 public class CurrencyView {
     private final CurrencyModel model;
     private final CurrencyOutput outputModel;
@@ -38,6 +41,9 @@ public class CurrencyView {
         initialise();
     }
 
+    /**
+     * Set up layout and buttons
+     */
     public void initialise() {
         initCurrencyList();
         this.pane.setCenter(this.mainTable);
@@ -62,6 +68,9 @@ public class CurrencyView {
         return this.scene;
     }
 
+    /**
+     * Set up main table
+     */
     public void initCurrencyList() {
         //Create the main table
         this.mainTable = new TableView();
@@ -80,10 +89,17 @@ public class CurrencyView {
             removeButtonCol);
     }
 
+    /**
+     * Button function to clear main table
+     */
     public void clearMainTable() {
         this.mainTable.getItems().clear();
     }
 
+    /**
+     * retrieve currency name from currency Code
+     * Searchs from data in the main table so no model-view leak
+     */
     public String getCurrNameFromCode(String currCode) {
         ObservableList<CurrencyDisplay> rows = this.mainTable.getItems();
         for(int i=0; i<rows.size(); i++) {
@@ -94,6 +110,9 @@ public class CurrencyView {
         return null;
     }
 
+    /**
+     * initialise the conversion field at the bottom of the pane
+     */
     public HBox conversionBoxInit() {
         HBox hbox = new HBox();
         ComboBox<String> fromDropDown = new ComboBox<String>();
@@ -149,6 +168,9 @@ public class CurrencyView {
         return hbox;
     }
 
+    /**
+     * Get params and perform conversion
+     */
     public void doConversion(String fromCurrCode, String toCurrCode,
         String amount, Label toLabel, Label exRate) {
         String value = model.currConversion(fromCurrCode, toCurrCode, amount);
@@ -158,6 +180,9 @@ public class CurrencyView {
             model.calcConversionRate(amount, value)));
     }
 
+    /**
+     * Remove item from main table
+     */
     public void removeItem(String currencyName) {
         ObservableList<CurrencyDisplay> rows = this.mainTable.getItems();
         for(int i=0; i<rows.size(); i++) {
@@ -168,6 +193,10 @@ public class CurrencyView {
         }
     }
 
+    /**
+     * After selecting countries on the world map, add their currencies to
+     * main table
+     */
     public void getCurrencyFromCountries(ObservableList<WorldMapView.Country>
         selectedCountries) {
         //Check if each country has supported currencies and add them to the list
@@ -204,6 +233,9 @@ public class CurrencyView {
         }
     }
 
+    /**
+     * Handle world map pop up
+     */
     public void mapPopUp() {
         //Create world map and display
         WorldMapView worldMap = new WorldMapView();
@@ -228,6 +260,9 @@ public class CurrencyView {
         }
     }
 
+    /**
+     * Get params from fields and send to output model
+     */
     public void sendReport(Button sendReportButton, String curr1Name,
         String curr1Code, String curr2Name, String curr2Code, String curr1Val) {
         if(curr1Name == null || curr1Code == null || curr2Name == null

@@ -1,12 +1,16 @@
 package major_project.model;
 
+/**
+ * Offline model for output API
+ */
 public class CurrencyOutputOffline implements CurrencyOutput {
-    //Offline model for output
     public CurrencyOutputOffline(){
         return;
     }
 
-    //Create String of short form report
+    /**
+     * Create Short form report
+     */
     public String createReport(String curr1Name, String curr1Code,
         String curr2Name, String curr2Code, String exRate, String curr1Val,
         String curr2Val) {
@@ -17,7 +21,9 @@ public class CurrencyOutputOffline implements CurrencyOutput {
     }
 
 
-    //Do nothing
+    /**
+     * Do nothing
+     */
     public boolean sendReport(String report) {
         System.out.println(report);
         return true;

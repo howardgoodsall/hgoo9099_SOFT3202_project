@@ -2,11 +2,14 @@ package major_project.model;
 
 import java.util.ArrayList;
 
+/**
+ * Offline model for input API
+ */
 public class CurrencyModelOffline implements CurrencyModel {
     public CurrencyModelOffline() {
         return;
     }
-    
+
     public void getSupportedCurrencies() {
         return;
     }

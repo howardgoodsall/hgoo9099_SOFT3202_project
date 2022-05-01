@@ -1,6 +1,8 @@
 package major_project.model;
-//POJO class for currency data from currencyscoop
 
+/**
+ * A POJO class for getting currency data from input API
+ */
 public class CurrencyData {
     private String currency_name;
     private String[] countries;

@@ -1,7 +1,9 @@
 package major_project.model;
 
+/**
+ * Online model for output API
+ */
 public class CurrencyOutputOnline implements CurrencyOutput {
-    //Online model for output
     private final String apiKey;
     private final String apiSID;
     private final String fromNum;
@@ -17,7 +19,9 @@ public class CurrencyOutputOnline implements CurrencyOutput {
         this.apiComm = apiComm;
     }
 
-    //Create Short report string
+    /**
+     * Create short form report
+     */
     public String createReport(String curr1Name, String curr1Code,
         String curr2Name, String curr2Code, String exRate, String curr1Val,
         String curr2Val) {
@@ -28,7 +32,9 @@ public class CurrencyOutputOnline implements CurrencyOutput {
         return shortReport;
     }
 
-    //Give args to apiCommunicator
+    /**
+     * Send report
+     */
     public boolean sendReport(String report) {
         String uri = String.format(
             "https://api.twilio.com/2010-04-01/Accounts/%s/Messages.json",

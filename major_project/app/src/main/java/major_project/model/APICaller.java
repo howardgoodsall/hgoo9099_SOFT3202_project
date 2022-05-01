@@ -17,7 +17,13 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.HttpHeaders;
 
+/**
+ * Handles GET and POST requests
+ */
 public class APICaller {
+    /**
+     * HTTP GET requests, only to input API
+     */
     public String apiCommGET(String uri) {
         try {
             HttpClient httpclient = HttpClients.createDefault();
@@ -33,6 +39,9 @@ public class APICaller {
         }
     }
 
+    /**
+     * HTTP POST requests, only used for output API
+     */
     public String apiCommPOST(String uri, String report, String postAuth,
         String toNum, String fromNum) {
         try {

@@ -12,6 +12,9 @@ import java.net.http.HttpResponse;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
+/**
+ * Online model for input API
+ */
 public class CurrencyModelOnline implements CurrencyModel {
     private ArrayList<String> viewingCurrencies;
     private ArrayList<CurrencyData> supportCurrencies;
@@ -23,24 +26,35 @@ public class CurrencyModelOnline implements CurrencyModel {
         this.apiComm = apiComm;
     }
 
-    //Get the list of supported currencies
+    /**
+     * Get list of supported currencies
+     */
     public void getSupportedCurrencies() {
         this.supportCurrencies = new ArrayList<CurrencyData>();
         String uri = String.format(
             "https://api.currencyscoop.com/v1/currencies?type=fiat&api_key=%s"
             ,apiKey);
-        JSONObject jsonObj = new JSONObject(this.apiComm.apiCommGET(uri));
-        JSONObject jsonObjData = (JSONObject)((JSONObject)(jsonObj.get("response"))).get("fiats");
-        for(int i=0; i<jsonObjData.names().length(); i++){
-            CurrencyData currencyData = new Gson().fromJson(jsonObjData.get(
-                jsonObjData.names().getString(i)).toString(), CurrencyData.class);
-            if(!currencyData.getCurrencyName().contains("(funds code)")) {
-                supportCurrencies.add(currencyData);
+        String response = this.apiComm.apiCommGET(uri);
+        JSONObject jsonObj = new JSONObject(response);
+        try {
+            JSONObject jsonObjData = (JSONObject)((JSONObject)jsonObj
+                .get("response")).get("fiats");
+            for(int i=0; i<jsonObjData.names().length(); i++){
+                CurrencyData currencyData = new Gson().fromJson(jsonObjData.get(
+                    jsonObjData.names().getString(i)).toString(), CurrencyData.class);
+                if(!currencyData.getCurrencyName().contains("(funds code)")) {
+                    supportCurrencies.add(currencyData);
+                }
             }
+        } catch(Exception e) {
+            System.out.println("API error, check environment variables are set correctly");
         }
+
     }
 
-    //Get supported currencies for a particular country
+    /**
+     * Get the support currencies for a country, calls getSupportedCurrencies
+     */
     public ArrayList<String[]> supportedCurrencies(String country) {
         if(this.supportCurrencies == null) {
             getSupportedCurrencies();
@@ -65,6 +79,9 @@ public class CurrencyModelOnline implements CurrencyModel {
         }
     }
 
+    /**
+     * Handle currency conversion call to API
+     */
     public String currConversion(String fromCurrCode, String toCurrCode,
         String amount){
             String uri = String.format(
@@ -77,6 +94,9 @@ public class CurrencyModelOnline implements CurrencyModel {
             return result;
         }
 
+    /**
+     * Calculate exchange rate
+     */
     public String calcConversionRate(String inp, String out) {
         try {
             if(inp == null || inp.equals("")) {

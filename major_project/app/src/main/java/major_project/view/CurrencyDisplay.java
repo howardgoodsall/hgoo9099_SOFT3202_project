@@ -1,6 +1,10 @@
 package major_project.view;
 import javafx.scene.control.Button;
 
+/**
+ * Essentially a POJO class for creating rows in the table
+ * Includes the button to remove row
+ */
 public class CurrencyDisplay {
     private String currencyCode;
     private String name;
