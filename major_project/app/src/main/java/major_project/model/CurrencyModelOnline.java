@@ -16,39 +16,21 @@ public class CurrencyModelOnline implements CurrencyModel {
     private ArrayList<String> viewingCurrencies;
     private ArrayList<CurrencyData> supportCurrencies;
     private String apiKey;
+    private APICaller apiComm;
 
-    public CurrencyModelOnline(String apiKey) {
+    public CurrencyModelOnline(String apiKey, APICaller apiComm) {
         this.apiKey = apiKey;
+        this.apiComm = apiComm;
     }
 
-    public ArrayList<String> getViewingCurrencies() {
-        return new ArrayList<String>();
-    }
-
-    public String apiCommunicator(String uri) {
-        try {
-            HttpRequest request = HttpRequest.newBuilder(new URI(uri))
-                .GET().build();
-            HttpClient client = HttpClient.newBuilder().build();
-            HttpResponse<String> response = client.send(request,
-                HttpResponse.BodyHandlers.ofString());
-            return response.body();
-        } catch (IOException | InterruptedException e) {
-            System.out.println("An error occured");
-            System.out.println(e.getMessage());
-            return null;
-        } catch (URISyntaxException ignored) {
-            return null;
-        }
-    }
-
+    //Get the list of supported currencies
     public void getSupportedCurrencies() {
         this.supportCurrencies = new ArrayList<CurrencyData>();
-        JSONObject jsonObj = new JSONObject(apiCommunicator(String.format(
+        String uri = String.format(
             "https://api.currencyscoop.com/v1/currencies?type=fiat&api_key=%s"
-            ,apiKey)));
-        JSONObject jsonObjData = (JSONObject)((JSONObject)jsonObj
-            .get("response")).get("fiats");
+            ,apiKey);
+        JSONObject jsonObj = new JSONObject(this.apiComm.apiCommGET(uri));
+        JSONObject jsonObjData = (JSONObject)((JSONObject)(jsonObj.get("response"))).get("fiats");
         for(int i=0; i<jsonObjData.names().length(); i++){
             CurrencyData currencyData = new Gson().fromJson(jsonObjData.get(
                 jsonObjData.names().getString(i)).toString(), CurrencyData.class);
@@ -58,6 +40,7 @@ public class CurrencyModelOnline implements CurrencyModel {
         }
     }
 
+    //Get supported currencies for a particular country
     public ArrayList<String[]> supportedCurrencies(String country) {
         if(this.supportCurrencies == null) {
             getSupportedCurrencies();
@@ -87,10 +70,10 @@ public class CurrencyModelOnline implements CurrencyModel {
             String uri = String.format(
             "https://api.currencyscoop.com/v1/convert?api_key=%s&from=%s&to=%s&amount=%s"
             ,apiKey, fromCurrCode, toCurrCode, amount);
-            JSONObject jsonObj = new JSONObject(apiCommunicator(uri));
+            JSONObject jsonObj = new JSONObject(this.apiComm.apiCommGET(uri));
             String result = String.format("%.03f",
-                Double.toString(((JSONObject)jsonObj.get("response"))
-                .getDouble("value")));
+                ((JSONObject)jsonObj.get("response"))
+                .getDouble("value"));
             return result;
         }
 

@@ -27,7 +27,7 @@ public class Main extends Application {
             System.exit(0);
         }
         if (params.get(0).equalsIgnoreCase("online")) {//Params for input model
-            model = new CurrencyModelOnline(System.getenv("INPUT_API_KEY"));
+            model = new CurrencyModelOnline(System.getenv("INPUT_API_KEY"), new APICaller());
         } else if (params.get(0).equalsIgnoreCase("offline")) {
             model = new CurrencyModelOffline();
         } else {
@@ -39,7 +39,8 @@ public class Main extends Application {
                 System.getenv("TWILIO_API_KEY"),
                 System.getenv("TWILIO_API_SID"),
                 System.getenv("TWILIO_API_FROM"),
-                System.getenv("TWILIO_API_TO"));
+                System.getenv("TWILIO_API_TO"),
+                new APICaller());
         } else if (params.get(1).equalsIgnoreCase("offline")) {
             outputModel = new CurrencyOutputOffline();
         } else {

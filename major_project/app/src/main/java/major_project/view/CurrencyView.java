@@ -64,7 +64,6 @@ public class CurrencyView {
 
     public void initCurrencyList() {
         //Create the main table
-        ArrayList<String> viewingCurrencies = model.getViewingCurrencies();
         this.mainTable = new TableView();
         TableColumn currencyCodeCol = new TableColumn("Currency Code");
         currencyCodeCol.setCellValueFactory(new PropertyValueFactory<>(
@@ -178,14 +177,21 @@ public class CurrencyView {
                 .getLocale().getDisplayCountry());
             if(allCurrenciesForCountry != null) {
                 for(int j=0; j<allCurrenciesForCountry.size(); j++) {
+                    boolean duplicate = false;
                     String[] currData = allCurrenciesForCountry.get(j);
-                    if(currData != null) {
+                    for(int k=0; k<this.mainTable.getItems().size(); k++) {//Check for duplicates
+                        if(currData[0].equals(((CurrencyDisplay)(this.mainTable.getItems().get(k))
+                            ).getCurrencyCode())) {
+                                duplicate = true;
+                            }
+                    }
+                    if((currData != null) && (!duplicate)) {
                         Button removeBtn = new Button();
                         removeBtn.setText("X");
                         removeBtn.setOnAction((event) -> removeItem(currData[0]));
                         CurrencyDisplay newRow = new CurrencyDisplay(currData[0],
                             currData[1], removeBtn);
-                        this.mainTable.getItems().add(newRow);
+                        this.mainTable.getItems().add(newRow);//Add new row to table
                     }
                 }
             }  else {
@@ -233,7 +239,11 @@ public class CurrencyView {
         String exRate = model.calcConversionRate(curr1Val, curr2Val);
         String report = outputModel.createReport(curr1Name, curr1Code, curr2Name
             , curr2Code, exRate, curr1Val, curr2Val);
-        outputModel.sendReport(report);
-        sendReportButton.setText("Send Report");
+        boolean result = outputModel.sendReport(report);
+        if(result) {
+            sendReportButton.setText("Send Report");
+        } else {
+            sendReportButton.setText("Failed to Send");
+        }
     }
 }
