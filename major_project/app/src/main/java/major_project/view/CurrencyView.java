@@ -1,6 +1,7 @@
 package major_project.view;
 
 import major_project.model.CurrencyModel;
+import major_project.model.CurrencyOutput;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.scene.control.*;
@@ -23,17 +24,17 @@ import org.controlsfx.control.WorldMapView;
 
 public class CurrencyView {
     private final CurrencyModel model;
+    private final CurrencyOutput outputModel;
     private final Scene scene;
     private final BorderPane pane;
     private TableView mainTable;
-    //private ArrayList<String> currencyCodes;
+    private final String fontStyle = "-fx-font: 16 arial;";
 
-    public CurrencyView(CurrencyModel model) {
+    public CurrencyView(CurrencyModel model, CurrencyOutput outputModel) {
         this.model = model;
+        this.outputModel = outputModel;
         this.pane = new BorderPane();
         this.scene = new Scene(this.pane);
-        //this.currencyCodes =
-
         initialise();
     }
 
@@ -43,12 +44,15 @@ public class CurrencyView {
         Button worldMapButton = new Button();
         worldMapButton.setOnAction((event) -> mapPopUp());
         worldMapButton.setText("Open World Map");
+        worldMapButton.setStyle(fontStyle);
         this.pane.setTop(worldMapButton);
         this.pane.setAlignment(worldMapButton, Pos.CENTER);
         this.pane.setPadding(new Insets(20, 20, 20, 20));
+        VBox sidePanel = new VBox();
         Button clearBtn = new Button("Clear");
         clearBtn.setOnAction((event) -> clearMainTable());
-        this.pane.setRight(clearBtn);
+        sidePanel.getChildren().addAll(clearBtn);
+        this.pane.setRight(sidePanel);
         HBox conversionBox = conversionBoxInit();
         this.pane.setBottom(conversionBox);
         this.pane.setAlignment(conversionBox, Pos.CENTER);
@@ -68,9 +72,9 @@ public class CurrencyView {
         currencyCodeCol.setMinWidth(400);
         TableColumn nameCol = new TableColumn("Name");
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-        nameCol.setMinWidth(400);
+        nameCol.setMinWidth(500);
         TableColumn removeButtonCol = new TableColumn("");
-        removeButtonCol.setMinWidth(110);
+        removeButtonCol.setMinWidth(200);
         removeButtonCol.setCellValueFactory(new PropertyValueFactory<>(
             "removeBtn"));
         this.mainTable.getColumns().addAll(currencyCodeCol, nameCol,
@@ -81,10 +85,22 @@ public class CurrencyView {
         this.mainTable.getItems().clear();
     }
 
+    public String getCurrNameFromCode(String currCode) {
+        ObservableList<CurrencyDisplay> rows = this.mainTable.getItems();
+        for(int i=0; i<rows.size(); i++) {
+            if(rows.get(i).getCurrencyCode().equals(currCode)) {
+                return rows.get(i).getName();
+            }
+        }
+        return null;
+    }
+
     public HBox conversionBoxInit() {
         HBox hbox = new HBox();
         ComboBox<String> fromDropDown = new ComboBox<String>();
+        fromDropDown.setStyle(fontStyle);
         ComboBox<String> toDropDown = new ComboBox<String>();
+        toDropDown.setStyle(fontStyle);
         ObservableList<CurrencyDisplay> rows = this.mainTable.getItems();
         this.mainTable.getItems().addListener(new ListChangeListener<Object>() {
             @Override
@@ -99,20 +115,48 @@ public class CurrencyView {
         });
 
         TextField fromTextField = new TextField();
+        fromTextField.setStyle(fontStyle);
+        Label fromLabel = new Label();
+        fromLabel.setText("             Convert ");
+        fromLabel.setStyle(fontStyle);
         Label middleLabel = new Label();
-        middleLabel.setText(" -> ");
+        middleLabel.setText("   To   ");
+        middleLabel.setStyle(fontStyle);
         Label toLabel = new Label();
-        toLabel.setText("??");
+        toLabel.setText("    ->              ");
+        toLabel.setStyle(fontStyle);
+        Label exRate = new Label();
+        exRate.setText(" Rate:    ");
+        exRate.setStyle(fontStyle);
 
         Button calculateBtn = new Button("Calculate");
+        calculateBtn.setStyle(fontStyle);
+        calculateBtn.setOnAction((event) -> doConversion(
+            (String)fromDropDown.getValue(), (String)toDropDown.getValue(),
+            fromTextField.getText(), toLabel, exRate));
 
-        hbox.getChildren().addAll(fromDropDown, fromTextField, middleLabel,
-            toDropDown, toLabel, calculateBtn);
+        Button sendReportButton = new Button("Send Report");
+        sendReportButton.setStyle(fontStyle);
+        sendReportButton.setOnAction((event) -> sendReport(sendReportButton,
+            getCurrNameFromCode((String)fromDropDown.getValue()),
+            (String)fromDropDown.getValue(),
+            getCurrNameFromCode((String)toDropDown.getValue()),
+            (String)toDropDown.getValue(),
+            fromTextField.getText()));
+
+        hbox.getChildren().addAll(fromLabel, fromDropDown, fromTextField,
+            middleLabel, toDropDown, toLabel, exRate, calculateBtn,
+            sendReportButton);
         return hbox;
     }
 
-    public int doConversion(String fromCurrCode, int amount, String toCurrCode) {
-        return 0;
+    public void doConversion(String fromCurrCode, String toCurrCode,
+        String amount, Label toLabel, Label exRate) {
+        String value = model.currConversion(fromCurrCode, toCurrCode, amount);
+        toLabel.setText(String.format(" ->   %s %s ",
+        value, toCurrCode));
+        exRate.setText(String.format(" Rate: %s ",
+            model.calcConversionRate(amount, value)));
     }
 
     public void removeItem(String currencyName) {
@@ -129,16 +173,22 @@ public class CurrencyView {
         selectedCountries) {
         //Check if each country has supported currencies and add them to the list
         for(int i=0; i<selectedCountries.size(); i++) {
-            String[] currData = model.supportedCurrencies(selectedCountries.get(i)
+            ArrayList<String[]> allCurrenciesForCountry =
+                model.supportedCurrencies(selectedCountries.get(i)
                 .getLocale().getDisplayCountry());
-            if(currData != null) {
-                Button removeBtn = new Button();
-                removeBtn.setText("X");
-                removeBtn.setOnAction((event) -> removeItem(currData[0]));
-                CurrencyDisplay newRow = new CurrencyDisplay(currData[0],
-                    currData[1], removeBtn);
-                this.mainTable.getItems().add(newRow);
-            } else {
+            if(allCurrenciesForCountry != null) {
+                for(int j=0; j<allCurrenciesForCountry.size(); j++) {
+                    String[] currData = allCurrenciesForCountry.get(j);
+                    if(currData != null) {
+                        Button removeBtn = new Button();
+                        removeBtn.setText("X");
+                        removeBtn.setOnAction((event) -> removeItem(currData[0]));
+                        CurrencyDisplay newRow = new CurrencyDisplay(currData[0],
+                            currData[1], removeBtn);
+                        this.mainTable.getItems().add(newRow);
+                    }
+                }
+            }  else {
                 Alert alertError = new Alert(Alert.AlertType.ERROR);
                 alertError.setHeaderText(String.format("No supported currencies found for %s"
                     ,selectedCountries.get(i).getLocale().getDisplayCountry()));
@@ -170,5 +220,20 @@ public class CurrencyView {
         if(selectedCountries != null) {
             getCurrencyFromCountries(selectedCountries);
         }
+    }
+
+    public void sendReport(Button sendReportButton, String curr1Name,
+        String curr1Code, String curr2Name, String curr2Code, String curr1Val) {
+        if(curr1Name == null || curr1Code == null || curr2Name == null
+            || curr2Code == null || curr1Val == null) {
+                return;//if info has not been inputted, do nothing
+            }
+        sendReportButton.setText("Sending ...");
+        String curr2Val = model.currConversion(curr1Code, curr2Code, curr1Val);
+        String exRate = model.calcConversionRate(curr1Val, curr2Val);
+        String report = outputModel.createReport(curr1Name, curr1Code, curr2Name
+            , curr2Code, exRate, curr1Val, curr2Val);
+        outputModel.sendReport(report);
+        sendReportButton.setText("Send Report");
     }
 }

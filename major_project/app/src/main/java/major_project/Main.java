@@ -12,6 +12,7 @@ import java.util.List;
 
 public class Main extends Application {
     private CurrencyModel model;
+    private CurrencyOutput outputModel;
     private CurrencyView view;
 
     public static void main(String[] args) {
@@ -25,19 +26,31 @@ public class Main extends Application {
             System.out.println("Usage: gradle run --args=<on/off>line <on/off>line");
             System.exit(0);
         }
-        if (params.get(0).equalsIgnoreCase("online")) {
-            model = new CurrencyModelOnline();
+        if (params.get(0).equalsIgnoreCase("online")) {//Params for input model
+            model = new CurrencyModelOnline(System.getenv("INPUT_API_KEY"));
         } else if (params.get(0).equalsIgnoreCase("offline")) {
             model = new CurrencyModelOffline();
         } else {
             System.out.println("Usage: gradle run --args=<on/off>line <on/off>line");
             System.exit(0);
         }
-        view = new CurrencyView(model);
-        primaryStage.setWidth(1000);
+        if (params.get(1).equalsIgnoreCase("online")) {//Params for output model
+            outputModel = new CurrencyOutputOnline(
+                System.getenv("TWILIO_API_KEY"),
+                System.getenv("TWILIO_API_SID"),
+                System.getenv("TWILIO_API_FROM"),
+                System.getenv("TWILIO_API_TO"));
+        } else if (params.get(1).equalsIgnoreCase("offline")) {
+            outputModel = new CurrencyOutputOffline();
+        } else {
+            System.out.println("Usage: gradle run --args=<on/off>line <on/off>line");
+            System.exit(0);
+        }
+        view = new CurrencyView(model, outputModel);//Create view
+        primaryStage.setWidth(1200);
         primaryStage.setHeight(650);
         primaryStage.setScene(view.getScene());
-        primaryStage.setTitle("Currency Scoop");
+        primaryStage.setTitle("Currency App");
         primaryStage.show();
     }
 }

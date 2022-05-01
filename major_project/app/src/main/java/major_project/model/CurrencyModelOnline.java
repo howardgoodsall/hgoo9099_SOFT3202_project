@@ -15,10 +15,10 @@ import org.json.JSONArray;
 public class CurrencyModelOnline implements CurrencyModel {
     private ArrayList<String> viewingCurrencies;
     private ArrayList<CurrencyData> supportCurrencies;
-    private String api_key = "902d7e1a3ee13cbb1eef28146c2f968d";
+    private String apiKey;
 
-    public CurrencyModelOnline() {
-        return;
+    public CurrencyModelOnline(String apiKey) {
+        this.apiKey = apiKey;
     }
 
     public ArrayList<String> getViewingCurrencies() {
@@ -46,17 +46,19 @@ public class CurrencyModelOnline implements CurrencyModel {
         this.supportCurrencies = new ArrayList<CurrencyData>();
         JSONObject jsonObj = new JSONObject(apiCommunicator(String.format(
             "https://api.currencyscoop.com/v1/currencies?type=fiat&api_key=%s"
-            ,api_key)));
+            ,apiKey)));
         JSONObject jsonObjData = (JSONObject)((JSONObject)jsonObj
             .get("response")).get("fiats");
         for(int i=0; i<jsonObjData.names().length(); i++){
             CurrencyData currencyData = new Gson().fromJson(jsonObjData.get(
                 jsonObjData.names().getString(i)).toString(), CurrencyData.class);
-            supportCurrencies.add(currencyData);
+            if(!currencyData.getCurrencyName().contains("(funds code)")) {
+                supportCurrencies.add(currencyData);
+            }
         }
     }
 
-    public String[] supportedCurrencies(String country) {
+    public ArrayList<String[]> supportedCurrencies(String country) {
         if(this.supportCurrencies == null) {
             getSupportedCurrencies();
         }
@@ -64,17 +66,48 @@ public class CurrencyModelOnline implements CurrencyModel {
         for(int i=0; i<this.supportCurrencies.size(); i++) {
             for(int j=0; j<this.supportCurrencies.get(i).getCountries().length;
                 j++) {
-                if(this.supportCurrencies.get(i).getCountries()[j].equals(country)) {
+                if(this.supportCurrencies.get(i).getCountries()[j]
+                    .equals(country)) {
                     String[] currencyDataPair = {this.supportCurrencies.get(i)
-                            .getCurrencyCode(), this.supportCurrencies.get(i).getCurrencyName()};
+                            .getCurrencyCode(), this.supportCurrencies.get(i)
+                            .getCurrencyName()};
                     currOfSelectedCountry.add(currencyDataPair);
                 }
             }
         }
         if(currOfSelectedCountry.size() != 0) {
-            return currOfSelectedCountry.get(0);
+            return currOfSelectedCountry;
         } else {
             return null;
+        }
+    }
+
+    public String currConversion(String fromCurrCode, String toCurrCode,
+        String amount){
+            String uri = String.format(
+            "https://api.currencyscoop.com/v1/convert?api_key=%s&from=%s&to=%s&amount=%s"
+            ,apiKey, fromCurrCode, toCurrCode, amount);
+            JSONObject jsonObj = new JSONObject(apiCommunicator(uri));
+            String result = String.format("%.03f",
+                Double.toString(((JSONObject)jsonObj.get("response"))
+                .getDouble("value")));
+            return result;
+        }
+
+    public String calcConversionRate(String inp, String out) {
+        try {
+            if(inp == null || inp.equals("")) {
+                return "Incorrect Formatting";
+            } else if (out == null || out.equals("")) {
+                return "Incorrect Formatting";
+            }
+            double inputVal = Double.parseDouble(inp);
+            double outputVal = Double.parseDouble(out);
+            double exchangeRate = inputVal / outputVal;
+            String result = String.format("%.03f", exchangeRate);
+            return result;
+        } catch (NumberFormatException e) {
+            return "Incorrect Formatting";
         }
     }
 }

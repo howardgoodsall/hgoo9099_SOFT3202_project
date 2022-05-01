@@ -7,6 +7,8 @@ public interface CurrencyModel {
     public ArrayList<String> getViewingCurrencies();
     public String apiCommunicator(String uri);
     public void getSupportedCurrencies();
-    public String[] supportedCurrencies(String country);
-    
+    public ArrayList<String[]> supportedCurrencies(String country);
+    public String currConversion(String fromCurrCode, String toCurrCode,
+        String amount);
+    public String calcConversionRate(String inp, String out);
 }

@@ -9,19 +9,30 @@ public class CurrencyModelOffline implements CurrencyModel {
 
     public ArrayList<String> getViewingCurrencies() {
         ArrayList<String> list = new ArrayList();
-        list.add("??D");
+        list.add("$$$");
         return list;
     }
 
     public String apiCommunicator(String uri) {
-        return "??D";
+        return "$$$";
     }
 
     public void getSupportedCurrencies() {
     }
 
-    public String[] supportedCurrencies(String country) {
-        String[] curr = {"??D",country};
-        return curr;
+    public ArrayList<String[]> supportedCurrencies(String country) {
+        String[] curr = {"$$$",country};
+        ArrayList<String[]> currencies = new ArrayList<String[]>();
+        currencies.add(curr);
+        return currencies;
+    }
+
+    public String currConversion(String fromCurrCode, String toCurrCode,
+        String amount){
+            return amount;
+    }
+
+    public String calcConversionRate(String inp, String out){
+        return "1";
     }
 }
