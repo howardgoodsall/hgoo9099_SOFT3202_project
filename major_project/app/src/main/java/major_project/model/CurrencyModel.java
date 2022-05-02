@@ -10,6 +10,5 @@ public interface CurrencyModel {
     public ArrayList<String[]> supportedCurrencies(String country);
     public String currConversion(String fromCurrCode, String toCurrCode,
         String amount);
-    public String calcConversionRate(String inp, String out);
     public String getExchangeRate(String fromCurrCode, String toCurrCode);
 }

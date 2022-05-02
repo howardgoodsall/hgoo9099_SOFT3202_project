@@ -15,3 +15,7 @@ Instructions and Notes:
 
 Indication of Completion:
     Milestone 1 (features & testing)
+    at commit ee992b5244dfed80a9297bd062d0d97cd890b3d1.
+    Subsequent commits are preparation/implementation for milestone 2,
+    there is no difference or fixes to functionality required for milestone 1 in
+    these commits though.

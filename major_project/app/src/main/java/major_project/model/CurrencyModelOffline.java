@@ -26,10 +26,6 @@ public class CurrencyModelOffline implements CurrencyModel {
             return amount;
     }
 
-    public String calcConversionRate(String inp, String out){
-        return "1";
-    }
-
     public String getExchangeRate(String fromCurrCode, String toCurrCode){
         return "1.000";
     }

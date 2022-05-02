@@ -48,10 +48,7 @@ public class CurrencyModelOnline implements CurrencyModel {
                 }
             }
         } catch(Exception e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("API Error");
-            alert.setHeaderText("An error occured, (check that INPUT_API_KEY is set correctly)");
-            alert.showAndWait();
+            System.out.println("An error occured, (check that INPUT_API_KEY is set correctly)");
             return;
         }
     }
@@ -97,26 +94,6 @@ public class CurrencyModelOnline implements CurrencyModel {
                 .getDouble("value"));
             return result;
         }
-
-    /**
-     * Calculate exchange rate
-     */
-    public String calcConversionRate(String inp, String out) {
-        try {
-            if(inp == null || inp.equals("")) {
-                return "Incorrect Formatting";
-            } else if (out == null || out.equals("")) {
-                return "Incorrect Formatting";
-            }
-            double inputVal = Double.parseDouble(inp);
-            double outputVal = Double.parseDouble(out);
-            double exchangeRate = inputVal / outputVal;
-            String result = String.format("%.03f", exchangeRate);
-            return result;
-        } catch (NumberFormatException e) {
-            return "Incorrect Formatting";
-        }
-    }
 
     /**
      * Get exchange rate between selected currencies

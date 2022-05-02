@@ -209,8 +209,8 @@ public class CurrencyView {
                     boolean duplicate = false;
                     String[] currData = allCurrenciesForCountry.get(j);
                     for(int k=0; k<this.mainTable.getItems().size(); k++) {//Check for duplicates
-                        if(currData[0].equals(((CurrencyDisplay)(this.mainTable.getItems().get(k))
-                            ).getCurrencyCode())) {
+                        if(currData[1].equals(((CurrencyDisplay)(this.mainTable.getItems().get(k))
+                            ).getName())) {
                                 duplicate = true;
                             }
                     }
@@ -271,7 +271,7 @@ public class CurrencyView {
             }
         sendReportButton.setText("Sending ...");
         String curr2Val = model.currConversion(curr1Code, curr2Code, curr1Val);
-        String exRate = model.calcConversionRate(curr1Val, curr2Val);
+        String exRate = model.getExchangeRate(curr1Val, curr2Val);
         String report = outputModel.createReport(curr1Name, curr1Code, curr2Name
             , curr2Code, exRate, curr1Val, curr2Val);
         boolean result = outputModel.sendReport(report);

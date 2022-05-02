@@ -15,7 +15,7 @@ public class CurrencyData {
             this.countries = countries;
             this.decimal_units = decimal_units;
             this.currency_code = currency_code;
-        }
+    }
 
     public String getCurrencyName() {
         return this.currency_name;
