@@ -177,7 +177,7 @@ public class CurrencyView {
         toLabel.setText(String.format(" ->   %s %s ",
         value, toCurrCode));
         exRate.setText(String.format(" Rate: %s ",
-            model.calcConversionRate(amount, value)));
+            model.getExchangeRate(fromCurrCode, toCurrCode)));
     }
 
     /**

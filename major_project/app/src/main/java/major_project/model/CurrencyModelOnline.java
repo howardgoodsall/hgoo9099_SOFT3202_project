@@ -11,6 +11,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import org.json.JSONObject;
 import org.json.JSONArray;
+import javafx.scene.control.*;
 
 /**
  * Online model for input API
@@ -47,9 +48,12 @@ public class CurrencyModelOnline implements CurrencyModel {
                 }
             }
         } catch(Exception e) {
-            System.out.println("API error, check environment variables are set correctly");
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("API Error");
+            alert.setHeaderText("An error occured, (check that INPUT_API_KEY is set correctly)");
+            alert.showAndWait();
+            return;
         }
-
     }
 
     /**
@@ -112,5 +116,19 @@ public class CurrencyModelOnline implements CurrencyModel {
         } catch (NumberFormatException e) {
             return "Incorrect Formatting";
         }
+    }
+
+    /**
+     * Get exchange rate between selected currencies
+     */
+    public String getExchangeRate(String fromCurrCode, String toCurrCode) {
+        String uri = String.format(
+        "https://api.currencyscoop.com/v1/latest?api_key=%s&base=%s&symbols=%s"
+        ,apiKey, fromCurrCode, toCurrCode);
+        JSONObject jsonObj = new JSONObject(this.apiComm.apiCommGET(uri));
+        String result = String.format("%.03f",
+            ((JSONObject)(((JSONObject)jsonObj.get("response"))
+            .get("rates"))).getDouble(toCurrCode));
+        return result;
     }
 }

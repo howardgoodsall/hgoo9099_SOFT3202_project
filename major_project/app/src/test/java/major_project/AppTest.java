@@ -32,15 +32,21 @@ class AppTest {
     }
 
     @Test
-    public void offInpBasicCurrConv() {
+    public void offInpCurrConv() {
         CurrencyModelOffline model = new CurrencyModelOffline();
         assertEquals("1", model.currConversion("A","B","1"));
     }
 
     @Test
-    public void offInpBasicConvRate() {
+    public void offInpcalcRate() {
         CurrencyModelOffline model = new CurrencyModelOffline();
         assertEquals("1", model.calcConversionRate("1", "1"));
+    }
+
+    @Test
+    public void offInpExchRate() {
+        CurrencyModelOffline model = new CurrencyModelOffline();
+        assertEquals(model.getExchangeRate("$$$", "$$$"), "1.000");
     }
 
     //Online input model tests
@@ -65,10 +71,19 @@ class AppTest {
     }
 
     @Test
-    public void onInpConvRate() {
+    public void onInpCalcRate() {
         APICaller apiCallMock = mock(APICaller.class);
         CurrencyModelOnline model = new CurrencyModelOnline("1234", apiCallMock);
         assertEquals(model.calcConversionRate("1", "1"), "1.000");
+    }
+
+    @Test
+    public void onInpExchRate() {
+        String response = "{\"response\":{\"date\":\"1\",\"base\":\"$$$\",\"rates\":{\"$$$\":1.000}}}";
+        APICaller apiCallMock = mock(APICaller.class);
+        when(apiCallMock.apiCommGET(anyString())).thenReturn(response);
+        CurrencyModelOnline model = new CurrencyModelOnline("1234", apiCallMock);
+        assertEquals(model.getExchangeRate("$$$", "$$$"), "1.000");
     }
 
     //Offline output model tests
