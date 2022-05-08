@@ -271,7 +271,7 @@ public class CurrencyView {
             }
         sendReportButton.setText("Sending ...");
         String curr2Val = model.currConversion(curr1Code, curr2Code, curr1Val);
-        String exRate = model.getExchangeRate(curr1Val, curr2Val);
+        String exRate = model.getExchangeRate(curr1Code, curr2Code);
         String report = outputModel.createReport(curr1Name, curr1Code, curr2Name
             , curr2Code, exRate, curr1Val, curr2Val);
         boolean result = outputModel.sendReport(report);
