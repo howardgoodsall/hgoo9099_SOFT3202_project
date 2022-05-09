@@ -21,13 +21,15 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        CurrencyDataStore database = new CurrencyDataStore();
         List<String> params = getParameters().getRaw();
         if (params.size() != 2) {
             System.out.println("Usage: gradle run --args=<on/off>line <on/off>line");
             System.exit(0);
         }
         if (params.get(0).equalsIgnoreCase("online")) {//Params for input model
-            model = new CurrencyModelOnline(System.getenv("INPUT_API_KEY"), new APICaller());
+            model = new CurrencyModelOnline(System.getenv("INPUT_API_KEY"),
+                new APICaller(), database);
         } else if (params.get(0).equalsIgnoreCase("offline")) {
             model = new CurrencyModelOffline();
         } else {

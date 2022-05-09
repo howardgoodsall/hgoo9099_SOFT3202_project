@@ -26,6 +26,19 @@ public class CurrencyModelOffline implements CurrencyModel {
             return amount;
     }
 
+    public void updateRate(double newRate, String from_curr_code,
+        String to_curr_code) {
+        return;
+    }
+
+    public void clearCache() {
+        return;
+    }
+
+    public String getExchangeRateCache(String fromCurrCode, String toCurrCode) {
+        return null;
+    }
+
     public String getExchangeRate(String fromCurrCode, String toCurrCode){
         return "1.000";
     }

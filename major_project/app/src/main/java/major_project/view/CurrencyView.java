@@ -14,6 +14,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ToggleButton;
 import javafx.collections.ObservableList;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -32,12 +36,14 @@ public class CurrencyView {
     private final BorderPane pane;
     private TableView mainTable;
     private final String fontStyle = "-fx-font: 16 arial;";
+    private String theme = "white";
 
     public CurrencyView(CurrencyModel model, CurrencyOutput outputModel) {
         this.model = model;
         this.outputModel = outputModel;
         this.pane = new BorderPane();
         this.scene = new Scene(this.pane);
+        this.scene.getRoot().setStyle("-fx-base:"+this.theme);//"-fx-base:black"
         initialise();
     }
 
@@ -47,21 +53,55 @@ public class CurrencyView {
     public void initialise() {
         initCurrencyList();
         this.pane.setCenter(this.mainTable);
-        Button worldMapButton = new Button();
-        worldMapButton.setOnAction((event) -> mapPopUp());
-        worldMapButton.setText("Open World Map");
-        worldMapButton.setStyle(fontStyle);
-        this.pane.setTop(worldMapButton);
-        this.pane.setAlignment(worldMapButton, Pos.CENTER);
         this.pane.setPadding(new Insets(20, 20, 20, 20));
-        VBox sidePanel = new VBox();
-        Button clearBtn = new Button("Clear");
-        clearBtn.setOnAction((event) -> clearMainTable());
-        sidePanel.getChildren().addAll(clearBtn);
-        this.pane.setRight(sidePanel);
+        this.pane.setRight(sideBoxInit());
         HBox conversionBox = conversionBoxInit();
         this.pane.setBottom(conversionBox);
         this.pane.setAlignment(conversionBox, Pos.CENTER);
+        Menu m = new Menu("Menu");
+        MenuItem m1 = new MenuItem("About");
+        m1.setOnAction((event) -> aboutButton());
+        m.getItems().add(m1);
+        MenuBar mb = new MenuBar();
+        mb.getMenus().add(m);
+        HBox topPanel = new HBox();
+        ToggleButton themebtn = new ToggleButton("Change theme");
+        themebtn.setOnAction((event) -> changeThemeButton());
+        ToggleGroup group = new ToggleGroup();
+        themebtn.setToggleGroup(group);
+        topPanel.getChildren().addAll(mb, themebtn);
+        this.pane.setTop(topPanel);
+    }
+
+    /**
+     * About button pop up
+     */
+    public void aboutButton() {
+        Label aboutLabelTop = new Label("Program name: Currency Conversion Thing");
+        Label aboutLabelMiddle = new Label("Student name: Howard Goodsall");
+        Label aboutLabelBottom = new Label("References: None");
+        BorderPane popUpPane = new BorderPane();
+        popUpPane.setTop(aboutLabelTop);
+        popUpPane.setLeft(aboutLabelMiddle);
+        popUpPane.setBottom(aboutLabelBottom);
+        popUpPane.setPadding(new Insets(20, 20, 20, 20));
+        Scene secondaryScene = new Scene(popUpPane);
+        secondaryScene.getRoot().setStyle(("-fx-base:"+this.theme));
+        Stage secondaryStage = new Stage();
+        secondaryStage.setWidth(400);
+        secondaryStage.setHeight(110);
+        secondaryStage.setScene(secondaryScene);
+        secondaryStage.setTitle("About Page");
+        secondaryStage.showAndWait();
+    }
+
+    public void changeThemeButton() {
+        if(this.theme.equals("black")) {
+            this.theme = "white";
+        } else {
+            this.theme = "black";
+        }
+        this.scene.getRoot().setStyle(("-fx-base:"+this.theme));
     }
 
     public Scene getScene() {
@@ -73,15 +113,18 @@ public class CurrencyView {
      */
     public void initCurrencyList() {
         //Create the main table
-        this.mainTable = new TableView();
-        TableColumn currencyCodeCol = new TableColumn("Currency Code");
+        this.mainTable = new TableView<TableColumn>();
+        TableColumn<CurrencyView, String> currencyCodeCol =
+            new TableColumn<CurrencyView, String>("Currency Code");
         currencyCodeCol.setCellValueFactory(new PropertyValueFactory<>(
             "currencyCode"));
         currencyCodeCol.setMinWidth(400);
-        TableColumn nameCol = new TableColumn("Name");
+        TableColumn<CurrencyView, String> nameCol =
+            new TableColumn<CurrencyView, String>("Name");
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameCol.setMinWidth(500);
-        TableColumn removeButtonCol = new TableColumn("");
+        TableColumn<CurrencyView, Button> removeButtonCol =
+            new TableColumn<CurrencyView, Button>("");
         removeButtonCol.setMinWidth(200);
         removeButtonCol.setCellValueFactory(new PropertyValueFactory<>(
             "removeBtn"));
@@ -89,25 +132,28 @@ public class CurrencyView {
             removeButtonCol);
     }
 
-    /**
-     * Button function to clear main table
-     */
-    public void clearMainTable() {
-        this.mainTable.getItems().clear();
-    }
 
-    /**
-     * retrieve currency name from currency Code
-     * Searchs from data in the main table so no model-view leak
-     */
-    public String getCurrNameFromCode(String currCode) {
-        ObservableList<CurrencyDisplay> rows = this.mainTable.getItems();
-        for(int i=0; i<rows.size(); i++) {
-            if(rows.get(i).getCurrencyCode().equals(currCode)) {
-                return rows.get(i).getName();
-            }
-        }
-        return null;
+    public VBox sideBoxInit() {
+        Button worldMapButton = new Button();
+        worldMapButton.setOnAction((event) -> mapPopUp());
+        worldMapButton.setText("Open World Map");
+        worldMapButton.setStyle(fontStyle);
+        worldMapButton.setMinWidth(160);
+
+        Button clearBtn = new Button("Clear");
+        clearBtn.setMinWidth(160);
+        clearBtn.setOnAction((event) -> clearMainTable());
+        clearBtn.setStyle(fontStyle);
+
+        Button clearCacheBtn = new Button("Clear Cache");
+        clearCacheBtn.setMinWidth(160);
+        clearCacheBtn.setOnAction((event) -> clearCache());
+        clearCacheBtn.setStyle(fontStyle);
+
+        VBox sidePanel = new VBox();
+        sidePanel.getChildren().addAll(worldMapButton, clearBtn, clearCacheBtn);
+        sidePanel.setPadding(new Insets(50, 20, 20, 20));
+        return sidePanel;
     }
 
     /**
@@ -160,7 +206,7 @@ public class CurrencyView {
             (String)fromDropDown.getValue(),
             getCurrNameFromCode((String)toDropDown.getValue()),
             (String)toDropDown.getValue(),
-            fromTextField.getText()));
+            fromTextField.getText(), exRate.getText()));
 
         hbox.getChildren().addAll(fromLabel, fromDropDown, fromTextField,
             middleLabel, toDropDown, toLabel, exRate, calculateBtn,
@@ -168,16 +214,70 @@ public class CurrencyView {
         return hbox;
     }
 
+
+    /**
+     * Button function to clear main table
+     */
+    public void clearMainTable() {
+        this.mainTable.getItems().clear();
+    }
+
+    /**
+     * Button function to clear database cache
+     */
+    public void clearCache() {
+        this.model.clearCache();
+    }
+
+    /**
+     * retrieve currency name from currency Code
+     * Searchs from data in the main table so no model-view leak
+     */
+    public String getCurrNameFromCode(String currCode) {
+        ObservableList<CurrencyDisplay> rows = this.mainTable.getItems();
+        for(int i=0; i<rows.size(); i++) {
+            if(rows.get(i).getCurrencyCode().equals(currCode)) {
+                return rows.get(i).getName();
+            }
+        }
+        return null;
+    }
+
     /**
      * Get params and perform conversion
      */
     public void doConversion(String fromCurrCode, String toCurrCode,
         String amount, Label toLabel, Label exRate) {
+        if(fromCurrCode == null || toCurrCode == null || amount == null) {
+            Alert alertError = new Alert(Alert.AlertType.ERROR);
+            alertError.setHeaderText("Not enough inputs given");
+            alertError.setTitle("Not enough inputs given");
+            alertError.showAndWait();
+            return;
+        }
         String value = model.currConversion(fromCurrCode, toCurrCode, amount);
         toLabel.setText(String.format(" ->   %s %s ",
         value, toCurrCode));
-        exRate.setText(String.format(" Rate: %s ",
-            model.getExchangeRate(fromCurrCode, toCurrCode)));
+        String exRateResult = model.getExchangeRateCache(fromCurrCode, toCurrCode);
+        boolean update = false;
+        if(exRateResult != null) {
+            Alert alertRefresh = new Alert(Alert.AlertType.CONFIRMATION);
+            alertRefresh.setHeaderText("Cache found for this exchange rate. Refresh exchange rate?");
+            alertRefresh.setTitle("Cache Hit");
+            Optional<ButtonType> result = alertRefresh.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK){
+                exRateResult = null;
+                update = true;
+            }
+        }
+        if(exRateResult == null) {
+            exRateResult = model.getExchangeRate(fromCurrCode, toCurrCode);
+            if(update) {
+                this.model.updateRate(Double.parseDouble(exRateResult),
+                    fromCurrCode, toCurrCode);
+            }
+        }
+        exRate.setText(String.format(" Rate: %s ", exRateResult ));
     }
 
     /**
@@ -264,11 +364,16 @@ public class CurrencyView {
      * Get params from fields and send to output model
      */
     public void sendReport(Button sendReportButton, String curr1Name,
-        String curr1Code, String curr2Name, String curr2Code, String curr1Val) {
+        String curr1Code, String curr2Name, String curr2Code, String curr1Val,
+        String exRateLabel) {
         if(curr1Name == null || curr1Code == null || curr2Name == null
-            || curr2Code == null || curr1Val == null) {
-                return;//if info has not been inputted, do nothing
-            }
+            || curr2Code == null || curr1Val == null || exRateLabel == null) {
+            Alert alertError = new Alert(Alert.AlertType.ERROR);
+            alertError.setHeaderText("Calculate Exchange rate first");
+            alertError.setTitle("Calculate Exchange rate first");
+            alertError.showAndWait();
+            return;
+        }
         sendReportButton.setText("Sending ...");
         String curr2Val = model.currConversion(curr1Code, curr2Code, curr1Val);
         String exRate = model.getExchangeRate(curr1Code, curr2Code);

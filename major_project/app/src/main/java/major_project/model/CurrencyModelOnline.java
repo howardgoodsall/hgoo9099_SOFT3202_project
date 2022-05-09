@@ -21,10 +21,13 @@ public class CurrencyModelOnline implements CurrencyModel {
     private ArrayList<CurrencyData> supportCurrencies;
     private String apiKey;
     private APICaller apiComm;
+    private CurrencyDataStore database;
 
-    public CurrencyModelOnline(String apiKey, APICaller apiComm) {
+    public CurrencyModelOnline(String apiKey, APICaller apiComm,
+        CurrencyDataStore database) {
         this.apiKey = apiKey;
         this.apiComm = apiComm;
+        this.database = database;
     }
 
     /**
@@ -95,17 +98,37 @@ public class CurrencyModelOnline implements CurrencyModel {
             return result;
         }
 
+
+    public String getExchangeRateCache(String fromCurrCode, String toCurrCode) {
+        Double cacheResult = this.database.getCacheRate(fromCurrCode, toCurrCode);
+        if(cacheResult != null) {
+            String resultCache = String.format("%.03f", cacheResult);
+            return resultCache;
+        }
+        return null;
+    }
+
+    public void updateRate(double newRate, String from_curr_code,
+        String to_curr_code) {
+        this.database.updateRate(newRate, from_curr_code, to_curr_code);
+    }
+
+    public void clearCache() {
+        this.database.dropRatesTable();
+    }
+
     /**
      * Get exchange rate between selected currencies
      */
     public String getExchangeRate(String fromCurrCode, String toCurrCode) {
         String uri = String.format(
         "https://api.currencyscoop.com/v1/latest?api_key=%s&base=%s&symbols=%s"
-        ,apiKey, fromCurrCode, toCurrCode);
+        ,apiKey, toCurrCode, fromCurrCode);
         JSONObject jsonObj = new JSONObject(this.apiComm.apiCommGET(uri));
-        String result = String.format("%.03f",
-            ((JSONObject)(((JSONObject)jsonObj.get("response"))
-            .get("rates"))).getDouble(toCurrCode));
-        return result;
+        Double result = ((JSONObject)(((JSONObject)jsonObj.get("response"))
+        .get("rates"))).getDouble(fromCurrCode);
+        String resultfrmt = String.format("%.03f", result);
+        this.database.insertRate(fromCurrCode, toCurrCode, result);
+        return resultfrmt;
     }
 }
