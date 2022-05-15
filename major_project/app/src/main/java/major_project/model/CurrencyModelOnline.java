@@ -11,7 +11,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import org.json.JSONObject;
 import org.json.JSONArray;
-import javafx.scene.control.*;
 
 /**
  * Online model for input API
@@ -39,6 +38,9 @@ public class CurrencyModelOnline implements CurrencyModel {
             "https://api.currencyscoop.com/v1/currencies?type=fiat&api_key=%s"
             ,apiKey);
         String response = this.apiComm.apiCommGET(uri);
+        if(response == null){//If the internet/api call doesn't work
+            return;
+        }
         JSONObject jsonObj = new JSONObject(response);
         try {
             JSONObject jsonObjData = (JSONObject)((JSONObject)jsonObj
@@ -118,17 +120,52 @@ public class CurrencyModelOnline implements CurrencyModel {
     }
 
     /**
-     * Get exchange rate between selected currencies
+     * Calculate exchange rate
      */
-    public String getExchangeRate(String fromCurrCode, String toCurrCode) {
-        String uri = String.format(
-        "https://api.currencyscoop.com/v1/latest?api_key=%s&base=%s&symbols=%s"
-        ,apiKey, toCurrCode, fromCurrCode);
-        JSONObject jsonObj = new JSONObject(this.apiComm.apiCommGET(uri));
-        Double result = ((JSONObject)(((JSONObject)jsonObj.get("response"))
-        .get("rates"))).getDouble(fromCurrCode);
-        String resultfrmt = String.format("%.03f", result);
-        this.database.insertRate(fromCurrCode, toCurrCode, result);
-        return resultfrmt;
+    public String calcExchangeRate(String inp, String out) {
+        try {
+            if(inp == null || inp.equals("")) {
+                return "Incorrect Formatting";
+            } else if (out == null || out.equals("")) {
+                return "Incorrect Formatting";
+            }
+            double inputVal = Double.parseDouble(inp);
+            double outputVal = Double.parseDouble(out);
+            double exchangeRate = inputVal / outputVal;
+            String result = String.format("%.03f", exchangeRate);
+            return result;
+        } catch (NumberFormatException e) {
+            return "Incorrect Formatting";
+        }
+    }
+
+    public boolean signUp(String username, String pwdHash) {
+        if(this.database.searchUsers(username)) {
+            return false;
+        } else {
+            this.database.insertUser(username, pwdHash);
+            return true;
+        }
+    }
+
+    public String login(String username, String pwdHash) {
+        return this.database.login(username, pwdHash);
+    }
+
+    public void updateTheme(String theme, String username) {
+        this.database.updateTheme(theme, username);
+    }
+
+    public void insertViewCurrency(String currCode, String currName,
+        String username) {
+        this.database.insertViewCurrency(currCode, currName, username);
+    }
+
+    public void removeViewCurrency(String currCode, String username) {
+        this.database.deleteViewCurrency(currCode, username);
+    }
+
+    public ArrayList<String[]> getViewingCurrencies(String username) {
+        return this.database.getViewingCurrencies(username);
     }
 }

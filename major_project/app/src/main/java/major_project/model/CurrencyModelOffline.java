@@ -39,7 +39,32 @@ public class CurrencyModelOffline implements CurrencyModel {
         return null;
     }
 
-    public String getExchangeRate(String fromCurrCode, String toCurrCode){
+    public String calcExchangeRate(String inp, String out) {
         return "1.000";
+    }
+
+    public boolean signUp(String username, String pwdHash) {
+        return true;
+    }
+
+    public String login(String username, String pwdHash) {
+        return "white";
+    }
+
+    public void updateTheme(String theme, String username) {
+        return;
+    }
+
+    public void insertViewCurrency(String currCode, String currName,
+        String username) {
+        return;
+    }
+
+    public void removeViewCurrency(String currCode, String username) {
+        return;
+    }
+
+    public ArrayList<String[]> getViewingCurrencies(String username) {
+        return null;
     }
 }

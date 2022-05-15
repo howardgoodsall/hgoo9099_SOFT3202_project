@@ -49,11 +49,13 @@ public class Main extends Application {
             System.out.println("Usage: gradle run --args=<on/off>line <on/off>line");
             System.exit(0);
         }
-        view = new CurrencyView(model, outputModel);//Create view
+        view = new CurrencyView(model, outputModel);
+
         primaryStage.setWidth(1200);
         primaryStage.setHeight(650);
         primaryStage.setScene(view.getScene());
         primaryStage.setTitle("Currency App");
         primaryStage.show();
+
     }
 }
