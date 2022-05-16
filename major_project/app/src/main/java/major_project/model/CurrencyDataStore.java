@@ -306,6 +306,10 @@ public class CurrencyDataStore {
         }
     }
 
+    /**
+     * Get the currencies that a user has in their viewing table
+     * returns an arraylist of string arrays, where [0] = curr id and [1] = curr name
+     */
     public ArrayList<String[]> getViewingCurrencies(String username) {
         String selectViewCurrSQL = String.format(
         "SELECT curr_code, curr_name FROM viewing_currencies WHERE username = \"%s\";",

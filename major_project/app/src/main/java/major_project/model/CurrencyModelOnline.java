@@ -158,6 +158,13 @@ public class CurrencyModelOnline implements CurrencyModel {
 
     public void insertViewCurrency(String currCode, String currName,
         String username) {
+        ArrayList<String[]> viewing_currs =
+            this.database.getViewingCurrencies(username);
+        for(int i=0; i<viewing_currs.size(); i++) {
+            if(viewing_currs.get(i)[0].equals(currCode)) {
+                return;
+            }
+        }
         this.database.insertViewCurrency(currCode, currName, username);
     }
 

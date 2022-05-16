@@ -117,13 +117,14 @@ public class CurrencyView {
      * Set up layout and buttons
      */
     public void initialise() {
+        this.mainTable = new TableView<TableColumn>();
+        HBox conversionBox = conversionBoxInit();
+        this.pane.setBottom(conversionBox);
+        this.pane.setAlignment(conversionBox, Pos.CENTER);
         initCurrencyList();
         this.pane.setCenter(this.mainTable);
         this.pane.setPadding(new Insets(20, 20, 20, 20));
         this.pane.setRight(sideBoxInit());
-        HBox conversionBox = conversionBoxInit();
-        this.pane.setBottom(conversionBox);
-        this.pane.setAlignment(conversionBox, Pos.CENTER);
         Menu m = new Menu("Menu");
         MenuItem m1 = new MenuItem("About");
         m1.setOnAction((event) -> aboutButton());
@@ -180,7 +181,6 @@ public class CurrencyView {
      */
     public void initCurrencyList() {
         //Create the main table
-        this.mainTable = new TableView<TableColumn>();
         TableColumn<CurrencyView, String> currencyCodeCol =
             new TableColumn<CurrencyView, String>("Currency Code");
         currencyCodeCol.setCellValueFactory(new PropertyValueFactory<>(
@@ -221,7 +221,7 @@ public class CurrencyView {
         worldMapButton.setStyle(fontStyle);
         worldMapButton.setMinWidth(160);
 
-        Button clearBtn = new Button("Clear");
+        Button clearBtn = new Button("Clear Table");
         clearBtn.setMinWidth(160);
         clearBtn.setOnAction((event) -> clearMainTable());
         clearBtn.setStyle(fontStyle);
