@@ -43,12 +43,24 @@ public class CurrencyModelOffline implements CurrencyModel {
         return "1.000";
     }
 
+    public String getExchangeRate(String fromCurrCode, String toCurrCode) {
+        return "1.000";
+    }
+
     public boolean signUp(String username, String pwdHash) {
         return true;
     }
 
     public String login(String username, String pwdHash) {
         return "white";
+    }
+
+    public String getUserColour(String username) {
+        return "0x888888";
+    }
+
+    public void updateColour(String colour, String username) {
+        return;
     }
 
     public void updateTheme(String theme, String username) {
@@ -61,6 +73,10 @@ public class CurrencyModelOffline implements CurrencyModel {
     }
 
     public void removeViewCurrency(String currCode, String username) {
+        return;
+    }
+
+    public void clearViewingTable(String username) {
         return;
     }
 

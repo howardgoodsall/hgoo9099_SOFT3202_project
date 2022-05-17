@@ -53,7 +53,7 @@ public class CurrencyModelOnline implements CurrencyModel {
                 }
             }
         } catch(Exception e) {
-            System.out.println("An error occured, (check that INPUT_API_KEY is set correctly)");
+            //System.out.println("An error occured, (check that INPUT_API_KEY is set correctly)");
             return;
         }
     }
@@ -139,6 +139,18 @@ public class CurrencyModelOnline implements CurrencyModel {
         }
     }
 
+    public String getExchangeRate(String fromCurrCode, String toCurrCode) {
+       String uri = String.format(
+       "https://api.currencyscoop.com/v1/latest?api_key=%s&base=%s&symbols=%s"
+       ,apiKey, toCurrCode, fromCurrCode);
+       JSONObject jsonObj = new JSONObject(this.apiComm.apiCommGET(uri));
+       Double result = ((JSONObject)(((JSONObject)jsonObj.get("response"))
+       .get("rates"))).getDouble(fromCurrCode);
+       String resultfrmt = String.format("%.03f", result);
+       this.database.insertRate(fromCurrCode, toCurrCode, result);
+       return resultfrmt;
+   }
+
     public boolean signUp(String username, String pwdHash) {
         if(this.database.searchUsers(username)) {
             return false;
@@ -152,6 +164,14 @@ public class CurrencyModelOnline implements CurrencyModel {
         return this.database.login(username, pwdHash);
     }
 
+    public String getUserColour(String username) {
+        return this.database.getUserColour(username);
+    }
+
+    public void updateColour(String colour, String username) {
+        this.database.updateColour(colour, username);
+    }
+
     public void updateTheme(String theme, String username) {
         this.database.updateTheme(theme, username);
     }
@@ -160,6 +180,9 @@ public class CurrencyModelOnline implements CurrencyModel {
         String username) {
         ArrayList<String[]> viewing_currs =
             this.database.getViewingCurrencies(username);
+        if(viewing_currs == null) {
+            return;
+        }
         for(int i=0; i<viewing_currs.size(); i++) {
             if(viewing_currs.get(i)[0].equals(currCode)) {
                 return;
@@ -170,6 +193,10 @@ public class CurrencyModelOnline implements CurrencyModel {
 
     public void removeViewCurrency(String currCode, String username) {
         this.database.deleteViewCurrency(currCode, username);
+    }
+
+    public void clearViewingTable(String username) {
+        this.database.clearViewingTable(username);
     }
 
     public ArrayList<String[]> getViewingCurrencies(String username) {

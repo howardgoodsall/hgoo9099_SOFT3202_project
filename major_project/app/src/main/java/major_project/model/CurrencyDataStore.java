@@ -133,7 +133,8 @@ public class CurrencyDataStore {
         CREATE TABLE IF NOT EXISTS users(
           username TEXT UNIQUE PRIMARY KEY,
           password TEXT,
-          theme TEXT
+          theme TEXT,
+          colour TEXT
         );
         """;
         if(!executeSQL(usersSchemaSQL)) {
@@ -188,6 +189,9 @@ public class CurrencyDataStore {
         }
     }
 
+    /**
+     * Update a cache
+     */
     public void updateRate(double newRate, String from_curr_code,
         String to_curr_code) {
         String rateUpdateSQL = String.format(
@@ -200,7 +204,7 @@ public class CurrencyDataStore {
     }
 
     /**
-     * SELECT from rates table
+     * SELECT all rates from rates table
      */
     public Double getCacheRate(String from_curr_code, String to_curr_code) {
         if(!this.tableExists) {
@@ -262,10 +266,32 @@ public class CurrencyDataStore {
      */
     public void insertUser(String username, String pwdHash) {
         String insertUserSQL = String.format(
-        "INSERT into users(username, password, theme) VALUES (\"%s\", \"%s\", \"white\");",
+        "INSERT into users(username, password, theme, colour) VALUES (\"%s\", \"%s\", \"white\", \"0x888888\");",
             username, pwdHash);
         if(!executeSQL(insertUserSQL)) {
             System.out.println("Could not insert user");
+        }
+    }
+
+    public String getUserColour(String username) {
+        String searchUsersColSQL = String.format(
+        "SELECT colour FROM users WHERE username=\"%s\";", username);
+        ArrayList<String> result = retrieveStringViaSQL(searchUsersColSQL);
+        if(result == null) {
+            return null;
+        } else if(result.size() == 1) {
+            return result.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public void updateColour(String colour, String username) {
+        String updateColourSQL = String.format(
+        "UPDATE users SET colour = \"%s\" WHERE username = \"%s\";",
+            colour, username);
+        if(!executeSQL(updateColourSQL)) {
+            System.out.println("Could not update colour");
         }
     }
 
@@ -302,6 +328,15 @@ public class CurrencyDataStore {
         "DELETE FROM viewing_currencies WHERE username = \"%s\" and curr_code = \"%s\";",
             username, currCode);
         if(!executeSQL(deleteViewCurrSQL)) {
+            System.out.println("Could not remove currency from database");
+        }
+    }
+
+    public void clearViewingTable(String username) {
+        String clearViewCurrSQL = String.format(
+        "DELETE FROM viewing_currencies WHERE username = \"%s\";",
+            username);
+        if(!executeSQL(clearViewCurrSQL)) {
             System.out.println("Could not remove currency from database");
         }
     }

@@ -1,7 +1,6 @@
 package major_project.view;
 
-import major_project.model.CurrencyModel;
-import major_project.model.CurrencyOutput;
+import major_project.controller.CurrencyController;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.scene.control.*;
@@ -20,14 +19,19 @@ import java.util.Optional;
 import java.util.ArrayList;
 import javafx.geometry.Insets;
 import org.controlsfx.control.WorldMapView;
+import org.controlsfx.control.WorldMapView.CountryView;
 import org.apache.commons.codec.digest.DigestUtils;
+import javafx.application.Platform;
+import javafx.scene.paint.Color;
+import javafx.scene.control.ColorPicker;
+import javafx.event.EventHandler;
+import javafx.scene.input.MouseEvent;
 
 /**
  * View handler class
  */
 public class CurrencyView {
-    private final CurrencyModel model;
-    private final CurrencyOutput outputModel;
+    private final CurrencyController controller;
     private final Scene scene;
     private final BorderPane pane;
     private TableView mainTable;
@@ -35,10 +39,10 @@ public class CurrencyView {
     private String theme = "white";
     private boolean loggedIn = false;
     private String user = null;
+    private String userColour = "0x111111";
 
-    public CurrencyView(CurrencyModel model, CurrencyOutput outputModel) {
-        this.model = model;
-        this.outputModel = outputModel;
+    public CurrencyView(CurrencyController controller) {
+        this.controller = controller;
         loginScreen();
         this.pane = new BorderPane();
         this.scene = new Scene(this.pane);
@@ -46,14 +50,18 @@ public class CurrencyView {
             this.scene.getRoot().setStyle("-fx-base:"+this.theme);
             initialise();
         } else {
-            System.exit(0);
+            System.exit(0);//If login screen is closed before logging in, exit
         }
     }
 
+    /**
+     * Perform login, alert if can't login, otherwise it closes login screen
+     * and opens main screen
+     */
     public void loginAction(String username, String password,
         Button loginButton) {
-        String pwdHash = DigestUtils.sha1Hex(password);
-        String result = this.model.login(username, pwdHash);
+        String pwdHash = DigestUtils.sha1Hex(password);//Hash pwd as soon as it recieves it
+        String result = this.controller.login(username, pwdHash);
         if(result == null) {
             Alert alertError = new Alert(Alert.AlertType.ERROR);
             alertError.setHeaderText("Wrong username or password");
@@ -67,10 +75,13 @@ public class CurrencyView {
         }
     }
 
+    /**
+     * Action for sign up button, alert if username already exists
+     */
     public void signUpAction(String username, String password,
         Button loginButton) {
         String pwdHash = DigestUtils.sha1Hex(password);
-        if(this.model.signUp(username, pwdHash)) {
+        if(this.controller.signUp(username, pwdHash)) {
             loginAction(username, password, loginButton);
         } else {
             Alert alertError = new Alert(Alert.AlertType.ERROR);
@@ -80,6 +91,9 @@ public class CurrencyView {
         }
     }
 
+    /**
+     * Display login screen before main screen
+     */
     public void loginScreen() {
         TextField username = new TextField();
         TextField password = new TextField();
@@ -146,7 +160,8 @@ public class CurrencyView {
     public void aboutButton() {
         Label aboutLabelTop = new Label("Program name: Currency Conversion Thing");
         Label aboutLabelMiddle = new Label("Student name: Howard Goodsall");
-        Label aboutLabelBottom = new Label("References: None");
+        Label aboutLabelBottom = new Label(
+        "References: https://github.com/controlsfx/controlsfx/issues/1091 (colour on map)");
         BorderPane popUpPane = new BorderPane();
         popUpPane.setTop(aboutLabelTop);
         popUpPane.setLeft(aboutLabelMiddle);
@@ -162,16 +177,22 @@ public class CurrencyView {
         secondaryStage.showAndWait();
     }
 
+    /**
+     * Toggle the theme
+     */
     public void changeThemeButton() {
         if(this.theme.equals("black")) {
             this.theme = "white";
         } else {
             this.theme = "black";
         }
-        this.model.updateTheme(this.theme, this.user);
+        this.controller.updateTheme(this.theme, this.user);
         this.scene.getRoot().setStyle(("-fx-base:"+this.theme));
     }
 
+    /**
+     * Return the scene (called in Main)
+     */
     public Scene getScene() {
         return this.scene;
     }
@@ -197,9 +218,11 @@ public class CurrencyView {
             "removeBtn"));
         this.mainTable.getColumns().addAll(currencyCodeCol, nameCol,
             removeButtonCol);
+        //Get user's colour preference
+        this.userColour = this.controller.getUserColour(this.user);
         //Populate table with data from database
         ArrayList<String[]> userViewList =
-            this.model.getViewingCurrencies(this.user);
+            this.controller.getViewingCurrencies(this.user);
         if(userViewList != null) {
             for(int i=0; i<userViewList.size(); i++) {
                 String[] item = userViewList.get(i);
@@ -213,7 +236,14 @@ public class CurrencyView {
         }
     }
 
+    public void setUserColour(ColorPicker colorPicker) {
+        this.userColour = colorPicker.getValue().toString();
+        this.controller.updateColour(this.userColour, this.user);
+    }
 
+    /**
+     * initialise the side box, with world map, clear table and clear cache tables
+     */
     public VBox sideBoxInit() {
         Button worldMapButton = new Button();
         worldMapButton.setOnAction((event) -> mapPopUp());
@@ -231,8 +261,12 @@ public class CurrencyView {
         clearCacheBtn.setOnAction((event) -> clearCache());
         clearCacheBtn.setStyle(fontStyle);
 
+        final ColorPicker colorPicker = new ColorPicker(Color.web(this.userColour));
+        colorPicker.setOnAction((event) ->setUserColour(colorPicker));
+
         VBox sidePanel = new VBox();
-        sidePanel.getChildren().addAll(worldMapButton, clearBtn, clearCacheBtn);
+        sidePanel.getChildren().addAll(worldMapButton, clearBtn, clearCacheBtn,
+            colorPicker);
         sidePanel.setPadding(new Insets(50, 20, 20, 20));
         return sidePanel;
     }
@@ -301,13 +335,14 @@ public class CurrencyView {
      */
     public void clearMainTable() {
         this.mainTable.getItems().clear();
+        this.controller.clearViewingTable(this.user);
     }
 
     /**
      * Button function to clear database cache
      */
     public void clearCache() {
-        this.model.clearCache();
+        this.controller.clearCache();
     }
 
     /**
@@ -337,10 +372,12 @@ public class CurrencyView {
             alertError.showAndWait();
             return;
         }
-        String value = model.currConversion(fromCurrCode, toCurrCode, amount);
+        String value = this.controller.currConversion(fromCurrCode, toCurrCode,
+            amount);
         toLabel.setText(String.format(" ->   %s %s ",
         value, toCurrCode));
-        String exRateResult = model.getExchangeRateCache(fromCurrCode, toCurrCode);
+        String exRateResult = this.controller.getExchangeRateCache(fromCurrCode,
+            toCurrCode);
         boolean update = false;
         if(exRateResult != null) {
             Alert alertRefresh = new Alert(Alert.AlertType.CONFIRMATION);
@@ -354,14 +391,16 @@ public class CurrencyView {
             }
         }
         if(exRateResult == null) {
-            //exRateResult = model.getExchangeRate(fromCurrCode, toCurrCode);
-            exRateResult = model.calcExchangeRate(amount, value);
+            exRateResult = this.controller.getExchangeRate(fromCurrCode,
+                toCurrCode);
+            //Double exRateDouble = this.controller.calcExchangeRate(amount, value);
             if(update) {
-                this.model.updateRate(Double.parseDouble(exRateResult),
+                this.controller.updateRate(Double.parseDouble(exRateResult),
                     fromCurrCode, toCurrCode);
             }
+            //exRateResult = String.format("%.03f", exRateDouble);
         }
-        exRate.setText(String.format(" Rate: %s ", exRateResult ));
+        exRate.setText(String.format(" Rate: %s ", exRateResult));
     }
 
     /**
@@ -371,7 +410,7 @@ public class CurrencyView {
         ObservableList<CurrencyDisplay> rows = this.mainTable.getItems();
         for(int i=0; i<rows.size(); i++) {
             if(rows.get(i).getCurrencyCode().equals(currencyName)) {
-                this.model.removeViewCurrency(rows.get(i).getCurrencyCode(),
+                this.controller.removeViewCurrency(rows.get(i).getCurrencyCode(),
                     this.user);
                 this.mainTable.getItems().remove(rows.get(i));
                 return;
@@ -388,17 +427,18 @@ public class CurrencyView {
         //Check if each country has supported currencies and add them to the list
         for(int i=0; i<selectedCountries.size(); i++) {
             ArrayList<String[]> allCurrenciesForCountry =
-                model.supportedCurrencies(selectedCountries.get(i)
+                this.controller.supportedCurrencies(selectedCountries.get(i)
                 .getLocale().getDisplayCountry());
             if(allCurrenciesForCountry != null) {
                 for(int j=0; j<allCurrenciesForCountry.size(); j++) {
                     boolean duplicate = false;
                     String[] currData = allCurrenciesForCountry.get(j);
                     for(int k=0; k<this.mainTable.getItems().size(); k++) {//Check for duplicates
-                        if(currData[1].equals(((CurrencyDisplay)(this.mainTable.getItems().get(k))
-                            ).getName())) {
-                                duplicate = true;
-                            }
+                        if(currData[1].equals((
+                            (CurrencyDisplay)(this.mainTable.getItems().get(k)))
+                            .getName())) {
+                            duplicate = true;
+                        }
                     }
                     if((currData != null) && (!duplicate)) {
                         Button removeBtn = new Button();
@@ -407,17 +447,24 @@ public class CurrencyView {
                         CurrencyDisplay newRow = new CurrencyDisplay(currData[0],
                             currData[1], removeBtn);
                         this.mainTable.getItems().add(newRow);//Add new row to table
-                        this.model.insertViewCurrency(newRow.getCurrencyCode(),
+                        this.controller.insertViewCurrency(newRow.getCurrencyCode(),
                             newRow.getName(), this.user);
                     }
                 }
             }  else {
-                Alert alertError = new Alert(Alert.AlertType.ERROR);
-                alertError.setHeaderText(String.format("No supported currencies found for %s"
-                    ,selectedCountries.get(i).getLocale().getDisplayCountry()));
-                alertError.setTitle("No currencies found");
-                alertError.getDialogPane().setStyle("-fx-base:"+this.theme);
-                alertError.showAndWait();
+                String countryName = selectedCountries.get(i).getLocale()
+                    .getDisplayCountry();
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        Alert alertError = new Alert(Alert.AlertType.ERROR);
+                        alertError.setHeaderText(String.format("No supported currencies found for %s"
+                            ,countryName));
+                        alertError.setTitle("No currencies found");
+                        //alertError.getDialogPane().setStyle("-fx-base:"+this.theme);
+                        alertError.showAndWait();
+                    }
+                });
             }
         }
     }
@@ -426,22 +473,9 @@ public class CurrencyView {
      * Handle world map pop up
      */
     public void mapPopUp() {
-        //Create world map and display
-        WorldMapView worldMap = new WorldMapView();
-        worldMap.setCountrySelectionMode​(WorldMapView.SelectionMode.MULTIPLE);
-        BorderPane secondaryPane = new BorderPane();
-        secondaryPane.setCenter(worldMap);
-        Label infoLabel = new Label();
-        infoLabel.setText("Press shift to select multiple countries, then close the window.");
-        secondaryPane.setBottom(infoLabel);
-        secondaryPane.setStyle("-fx-base:"+this.theme);
-        Scene secondaryScene = new Scene(secondaryPane);
-        Stage secondaryStage = new Stage();
-        secondaryStage.setWidth(1000);
-        secondaryStage.setHeight(600);
-        secondaryStage.setScene(secondaryScene);
-        secondaryStage.setTitle("Currency World Map");
-        secondaryStage.showAndWait();
+        CurrencyWorldMap worldMap = new CurrencyWorldMap(theme, this.userColour);
+        Stage mapStage = worldMap.mapPopUp();
+        mapStage.showAndWait();
         ObservableList<WorldMapView.Country> selectedCountries = worldMap
             .getSelectedCountries();
         //Get selected countries and add their currencies to the list
@@ -453,20 +487,16 @@ public class CurrencyView {
     }
 
     /**
-     * Handles call to model for send report (runs in separate thread)
+     * Handles call to controller for send report (runs in separate thread)
      */
-    public void createAndSendReport(Button sendReportButton, String curr1Name,
+    public void createReport(Button sendReportButton, String curr1Name,
         String curr1Code, String curr2Name, String curr2Code, String curr1Val) {
-            String curr2Val = model.currConversion(curr1Code, curr2Code,
-                curr1Val);
-            String exRate = model.calcExchangeRate(curr1Val, curr2Val);
-            String report = outputModel.createReport(curr1Name, curr1Code,
-                curr2Name, curr2Code, exRate, curr1Val, curr2Val);
-            outputModel.sendReport(report);
-        }
+        this.controller.createAndSendReport(curr1Name, curr1Code,
+            curr2Name, curr2Code, curr1Val);
+    }
 
     /**
-     * Get params from fields and send to output model
+     * Get params from fields and send to output model via controller (creates new thread)
      */
     public void sendReport(Button sendReportButton, String curr1Name,
         String curr1Code, String curr2Name, String curr2Code, String curr1Val,
@@ -480,7 +510,7 @@ public class CurrencyView {
             alertError.showAndWait();
             return;
         }
-        Thread t1 = new Thread(() -> createAndSendReport(sendReportButton,
+        Thread t1 = new Thread(() -> createReport(sendReportButton,
             curr1Name, curr1Code, curr2Name, curr2Code, curr1Val));
         t1.start();
     }

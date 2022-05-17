@@ -6,6 +6,7 @@ package major_project;
 
 import major_project.model.*;
 import major_project.view.CurrencyView;
+import major_project.controller.CurrencyController;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import java.util.List;
@@ -49,7 +50,9 @@ public class Main extends Application {
             System.out.println("Usage: gradle run --args=<on/off>line <on/off>line");
             System.exit(0);
         }
-        view = new CurrencyView(model, outputModel);
+        CurrencyController controller =
+            new CurrencyController(model, outputModel);
+        view = new CurrencyView(controller);
 
         primaryStage.setWidth(1200);
         primaryStage.setHeight(650);

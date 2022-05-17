@@ -15,11 +15,15 @@ public interface CurrencyModel {
     public void clearCache();
     public String getExchangeRateCache(String fromCurrCode, String toCurrCode);
     public String calcExchangeRate(String inp, String out);
+    public String getExchangeRate(String fromCurrCode, String toCurrCode);
     public boolean signUp(String username, String pwdHash);
     public String login(String username, String pwdHash);
+    public String getUserColour(String username);
+    public void updateColour(String colour, String username);
     public void updateTheme(String theme, String username);
     public void insertViewCurrency(String currCode, String currName,
         String username);
     public void removeViewCurrency(String currCode, String username);
+    public void clearViewingTable(String username);
     public ArrayList<String[]> getViewingCurrencies(String username);
 }
