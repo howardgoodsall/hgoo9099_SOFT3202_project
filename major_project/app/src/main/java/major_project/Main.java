@@ -1,7 +1,13 @@
-//INFO
-//SID: 490477658
-//Input: https://currencyscoop.com/api-documentation
-//Output: https://www.twilio.com/
+/**INFO
+ * SID: 490477658
+ * Input: https://currencyscoop.com/api-documentation
+ * Output: https://www.twilio.com/
+ * Level of completion: Distinction
+ * Optional features:
+ * - About (C)
+ * - Light/Dark mode (C)
+ * - Personalisation and user accounts (D)
+ */
 package major_project;
 
 import major_project.model.*;

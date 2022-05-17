@@ -15,38 +15,42 @@ import javafx.event.EventHandler;
 import javafx.event.Event;
 import javafx.scene.input.MouseEvent;
 
+/**
+ * Class for world map pop up
+ * Split into different class from CurrencyView mainly for future extensibility
+ * (Also single responsibility)
+ */
 public class CurrencyWorldMap {
     private WorldMapView worldMap;
     private String theme;
     private final Color colour;
-    private final Color oppositeColour;
     private boolean clickFlag = false;
 
     public CurrencyWorldMap(String theme, String userColour) {
         worldMap = new WorldMapView();
         this.theme = theme;
         this.colour = Color.web(userColour);
-        this.oppositeColour = Color.web(String.format("rgb(%d,%d,%d)",
-            (int)(255-this.colour.getRed()),
-            (int)(255-this.colour.getGreen()),
-            (int)(255-this.colour.getBlue())));
     }
 
-    public Color getColour() {
-        return this.colour;
-    }
-
-    public Color getOppColour() {
-        return this.oppositeColour;
-    }
-
-
+    /**
+     * Style and produce the whole map popup
+     * The code that implements colours for the countries rather than just the
+     * background has been left in but commented out.
+     */
     public Stage mapPopUp() {
         //Create world map and display
         worldMap.setStyle("-fx-base:"+this.theme);
         worldMap.setBackground(new Background(new BackgroundFill(
             this.colour, null, null)));
-        /*String backgroundColour = "0x111111";
+
+        //Following is part of an implementation for changing colours of each individual country
+        //Doing this however has some problems that can't be solved using the current
+        //implementation of the WorldMapView class provided by controlsfx.
+        //Mainly the multi-select using shift-click would have to be removed.
+        //https://edstem.org/au/courses/7942/discussion/865379
+
+        /*
+        String backgroundColour = "0x111111";
         if(this.theme.equals("white") ||
             this.colour.toString().compareTo("0x444444") < 0) {//This changes the background colour so that it always contrasts with the chosen colour
             backgroundColour = "0xeeeeee";
@@ -103,11 +107,10 @@ public class CurrencyWorldMap {
         return secondaryStage;
     }
 
+    /**
+     * Return selected countries (called after window close)
+     */
     public ObservableList<WorldMapView.Country> getSelectedCountries() {
         return worldMap.getSelectedCountries();
-    }
-
-    public String getColourStr() {
-        return this.colour.toString();
     }
 }

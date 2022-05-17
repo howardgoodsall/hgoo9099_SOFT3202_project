@@ -39,7 +39,7 @@ public class CurrencyView {
     private String theme = "white";
     private boolean loggedIn = false;
     private String user = null;
-    private String userColour = "0x111111";
+    private String userColour = "0x111111";//Default colour
 
     public CurrencyView(CurrencyController controller) {
         this.controller = controller;
@@ -158,10 +158,13 @@ public class CurrencyView {
      * About button pop up
      */
     public void aboutButton() {
-        Label aboutLabelTop = new Label("Program name: Currency Conversion Thing");
+        Label aboutLabelTop = new Label("Program name: Currency Conversion App");
         Label aboutLabelMiddle = new Label("Student name: Howard Goodsall");
         Label aboutLabelBottom = new Label(
-        "References: https://github.com/controlsfx/controlsfx/issues/1091 (colour on map)");
+        """
+        References:
+            https://stackoverflow.com/questions/13784333/platform-runlater-and-task-in-javafx
+        """);
         BorderPane popUpPane = new BorderPane();
         popUpPane.setTop(aboutLabelTop);
         popUpPane.setLeft(aboutLabelMiddle);
@@ -170,8 +173,8 @@ public class CurrencyView {
         Scene secondaryScene = new Scene(popUpPane);
         secondaryScene.getRoot().setStyle(("-fx-base:"+this.theme));
         Stage secondaryStage = new Stage();
-        secondaryStage.setWidth(400);
-        secondaryStage.setHeight(110);
+        secondaryStage.setWidth(650);
+        secondaryStage.setHeight(200);
         secondaryStage.setScene(secondaryScene);
         secondaryStage.setTitle("About Page");
         secondaryStage.showAndWait();
@@ -236,6 +239,9 @@ public class CurrencyView {
         }
     }
 
+    /**
+     * Set the user's colour preference for map background
+     */
     public void setUserColour(ColorPicker colorPicker) {
         this.userColour = colorPicker.getValue().toString();
         this.controller.updateColour(this.userColour, this.user);
@@ -261,12 +267,20 @@ public class CurrencyView {
         clearCacheBtn.setOnAction((event) -> clearCache());
         clearCacheBtn.setStyle(fontStyle);
 
+        Label colourPickerLabel = new Label("""
+
+
+        World Map Background Colour:
+        """);
+        colourPickerLabel.setStyle(fontStyle);
+
         final ColorPicker colorPicker = new ColorPicker(Color.web(this.userColour));
         colorPicker.setOnAction((event) ->setUserColour(colorPicker));
+        colorPicker.setStyle(fontStyle);
 
         VBox sidePanel = new VBox();
         sidePanel.getChildren().addAll(worldMapButton, clearBtn, clearCacheBtn,
-            colorPicker);
+            colourPickerLabel, colorPicker);
         sidePanel.setPadding(new Insets(50, 20, 20, 20));
         return sidePanel;
     }
@@ -360,6 +374,46 @@ public class CurrencyView {
     }
 
     /**
+     * Call api and update thread (runs in separate thread)
+     */
+    public void updateToLabel(String fromCurrCode, String toCurrCode,
+        String amount, Label toLabel) {
+        String value = this.controller.currConversion(fromCurrCode, toCurrCode,
+            amount);
+
+        //Following has been adapted from https://stackoverflow.com/questions/13784333/platform-runlater-and-task-in-javafx
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                toLabel.setText(String.format(" ->   %s %s ",
+                value, toCurrCode));
+            }
+        });
+    }
+
+    /**
+     * Update the label for the exchange rate (runs in separate thread)
+     */
+    public void updateExRateLabel(String fromCurrCode, String toCurrCode,
+        String amount, Label exRate, String exRateResult) {
+        String rate = exRateResult;
+        if(exRateResult == null) {
+            rate = this.controller.getExchangeRate(fromCurrCode,
+                toCurrCode);
+            this.controller.updateRate(Double.parseDouble(rate),
+                fromCurrCode, toCurrCode);
+        }
+        final String newLabel = String.format(" Rate: %s ", rate);
+        //Following has been adapted from https://stackoverflow.com/questions/13784333/platform-runlater-and-task-in-javafx
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                exRate.setText(newLabel);
+            }
+        });
+    }
+
+    /**
      * Get params and perform conversion
      */
     public void doConversion(String fromCurrCode, String toCurrCode,
@@ -372,13 +426,13 @@ public class CurrencyView {
             alertError.showAndWait();
             return;
         }
-        String value = this.controller.currConversion(fromCurrCode, toCurrCode,
-            amount);
-        toLabel.setText(String.format(" ->   %s %s ",
-        value, toCurrCode));
+
+        Thread t1 = new Thread(() -> updateToLabel(fromCurrCode, toCurrCode,
+            amount, toLabel));
+        t1.start();
+
         String exRateResult = this.controller.getExchangeRateCache(fromCurrCode,
             toCurrCode);
-        boolean update = false;
         if(exRateResult != null) {
             Alert alertRefresh = new Alert(Alert.AlertType.CONFIRMATION);
             alertRefresh.setHeaderText("Cache found for this exchange rate. Refresh exchange rate?");
@@ -387,20 +441,15 @@ public class CurrencyView {
             Optional<ButtonType> result = alertRefresh.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.OK){
                 exRateResult = null;
-                update = true;
             }
+
         }
+        final String rateHolder = exRateResult;
         if(exRateResult == null) {
-            exRateResult = this.controller.getExchangeRate(fromCurrCode,
-                toCurrCode);
-            //Double exRateDouble = this.controller.calcExchangeRate(amount, value);
-            if(update) {
-                this.controller.updateRate(Double.parseDouble(exRateResult),
-                    fromCurrCode, toCurrCode);
-            }
-            //exRateResult = String.format("%.03f", exRateDouble);
+            Thread t2 = new Thread(() -> updateExRateLabel(fromCurrCode, toCurrCode,
+                amount, exRate, rateHolder));
+            t2.start();
         }
-        exRate.setText(String.format(" Rate: %s ", exRateResult));
     }
 
     /**
@@ -416,6 +465,25 @@ public class CurrencyView {
                 return;
             }
         }
+    }
+
+    /**
+     * Add row to mainTable
+     */
+    public void addRowToMainTable(CurrencyDisplay newRow) {
+        this.mainTable.getItems().add(newRow);
+    }
+
+    /**
+     * Display error for no currencies found
+     */
+    public void noSupportedCurrencies(String countryName) {
+        Alert alertError = new Alert(Alert.AlertType.ERROR);
+        alertError.setHeaderText(String.format("No supported currencies found for %s"
+            ,countryName));
+        alertError.setTitle("No currencies found");
+        alertError.getDialogPane().setStyle("-fx-base:"+this.theme);
+        alertError.showAndWait();
     }
 
     /**
@@ -446,7 +514,7 @@ public class CurrencyView {
                         removeBtn.setOnAction((event) -> removeItem(currData[0]));
                         CurrencyDisplay newRow = new CurrencyDisplay(currData[0],
                             currData[1], removeBtn);
-                        this.mainTable.getItems().add(newRow);//Add new row to table
+                        Platform.runLater(() -> addRowToMainTable(newRow));
                         this.controller.insertViewCurrency(newRow.getCurrencyCode(),
                             newRow.getName(), this.user);
                     }
@@ -454,17 +522,7 @@ public class CurrencyView {
             }  else {
                 String countryName = selectedCountries.get(i).getLocale()
                     .getDisplayCountry();
-                Platform.runLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        Alert alertError = new Alert(Alert.AlertType.ERROR);
-                        alertError.setHeaderText(String.format("No supported currencies found for %s"
-                            ,countryName));
-                        alertError.setTitle("No currencies found");
-                        //alertError.getDialogPane().setStyle("-fx-base:"+this.theme);
-                        alertError.showAndWait();
-                    }
-                });
+                Platform.runLater(() -> noSupportedCurrencies(countryName));
             }
         }
     }

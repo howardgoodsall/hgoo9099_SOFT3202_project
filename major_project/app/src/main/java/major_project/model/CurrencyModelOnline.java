@@ -53,6 +53,7 @@ public class CurrencyModelOnline implements CurrencyModel {
                 }
             }
         } catch(Exception e) {
+            //Following line was an easy way to see if the keys werent set
             //System.out.println("An error occured, (check that INPUT_API_KEY is set correctly)");
             return;
         }
@@ -101,6 +102,9 @@ public class CurrencyModelOnline implements CurrencyModel {
         }
 
 
+    /**
+     * Get cache for exchange rate and format it into string with 3 dec places
+     */
     public String getExchangeRateCache(String fromCurrCode, String toCurrCode) {
         Double cacheResult = this.database.getCacheRate(fromCurrCode, toCurrCode);
         if(cacheResult != null) {
@@ -110,17 +114,23 @@ public class CurrencyModelOnline implements CurrencyModel {
         return null;
     }
 
+    /**
+     * Pass call to function of same name in database
+     */
     public void updateRate(double newRate, String from_curr_code,
         String to_curr_code) {
         this.database.updateRate(newRate, from_curr_code, to_curr_code);
     }
 
+    /**
+     * Pass call to function in database
+     */
     public void clearCache() {
         this.database.dropRatesTable();
     }
 
     /**
-     * Calculate exchange rate
+     * Calculate exchange rate, unused but kept in
      */
     public String calcExchangeRate(String inp, String out) {
         try {
@@ -139,6 +149,9 @@ public class CurrencyModelOnline implements CurrencyModel {
         }
     }
 
+    /**
+     * API call to get exchange rate between 2 currencies
+     */
     public String getExchangeRate(String fromCurrCode, String toCurrCode) {
        String uri = String.format(
        "https://api.currencyscoop.com/v1/latest?api_key=%s&base=%s&symbols=%s"
@@ -151,6 +164,9 @@ public class CurrencyModelOnline implements CurrencyModel {
        return resultfrmt;
    }
 
+   /**
+    * Check if user exists
+    */
     public boolean signUp(String username, String pwdHash) {
         if(this.database.searchUsers(username)) {
             return false;
@@ -160,22 +176,37 @@ public class CurrencyModelOnline implements CurrencyModel {
         }
     }
 
+    /**
+     * Pass call to function of same name in database
+     */
     public String login(String username, String pwdHash) {
         return this.database.login(username, pwdHash);
     }
 
+    /**
+     * Pass call to function of same name in database
+     */
     public String getUserColour(String username) {
         return this.database.getUserColour(username);
     }
 
+    /**
+     * Pass call to function of same name in database
+     */
     public void updateColour(String colour, String username) {
         this.database.updateColour(colour, username);
     }
 
+    /**
+     * Pass call to function of same name in database
+     */
     public void updateTheme(String theme, String username) {
         this.database.updateTheme(theme, username);
     }
 
+    /**
+     * Insert a currency into the user's current view via database
+     */
     public void insertViewCurrency(String currCode, String currName,
         String username) {
         ArrayList<String[]> viewing_currs =
@@ -191,14 +222,23 @@ public class CurrencyModelOnline implements CurrencyModel {
         this.database.insertViewCurrency(currCode, currName, username);
     }
 
+    /**
+     * Pass call to function of same name in database
+     */
     public void removeViewCurrency(String currCode, String username) {
         this.database.deleteViewCurrency(currCode, username);
     }
 
+    /**
+     * Pass call to function of same name in database
+     */
     public void clearViewingTable(String username) {
         this.database.clearViewingTable(username);
     }
 
+    /**
+     * Pass call to function of same name in database
+     */
     public ArrayList<String[]> getViewingCurrencies(String username) {
         return this.database.getViewingCurrencies(username);
     }

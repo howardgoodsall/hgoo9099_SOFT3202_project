@@ -286,6 +286,9 @@ public class CurrencyDataStore {
         }
     }
 
+    /**
+     * Update a user's colour preference
+     */
     public void updateColour(String colour, String username) {
         String updateColourSQL = String.format(
         "UPDATE users SET colour = \"%s\" WHERE username = \"%s\";",
@@ -332,6 +335,9 @@ public class CurrencyDataStore {
         }
     }
 
+    /**
+     * Clear a user's viewing table (removes all their entries)
+     */
     public void clearViewingTable(String username) {
         String clearViewCurrSQL = String.format(
         "DELETE FROM viewing_currencies WHERE username = \"%s\";",

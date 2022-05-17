@@ -12,18 +12,29 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 
+/**
+ * All test cases for model
+ * Testing online & offline for input and output classes
+ * Also mocking of APICaller and CurrencyDataStore
+ * CurrencyData is not tested because its a POJO class
+ */
 class AppTest {
 
     private APICaller apiCommMock;
     private CurrencyDataStore dbMock;
 
+    /**
+     * Set up 2 most commonly used mocks
+     */
     @BeforeEach
     public void setUp(){
         this.apiCommMock = mock(APICaller.class);
         this.dbMock = mock(CurrencyDataStore.class);
     }
 
-    //Offline input model tests
+    /**
+     * Offline input model tests start here
+     */
     @Test
     public void offInpSupportedCurr() {
          CurrencyModelOffline model = new CurrencyModelOffline();
@@ -125,8 +136,9 @@ class AppTest {
         assertNull(model.getViewingCurrencies("u"));
     }
 
-    //Online input model tests
-
+    /**
+     * Online input model tests start here
+     */
     @Test
     public void onInpSupportedCurr() {
         String response = "{\"response\":{\"fiats\":{\"$$$\":{\"currency_name\":\"curr_name\",\"currency_code\":\"$$$\",\"decimal_units\":\"1\",\"countries\":[\"country\"]}}}}";
@@ -260,7 +272,9 @@ class AppTest {
     }
 
 
-    //Offline output model tests
+    /**
+     * Offline output model tests start here
+     */
     @Test
     public void offOutCreateReport() {
         CurrencyOutputOffline model = new CurrencyOutputOffline();
@@ -274,7 +288,9 @@ class AppTest {
         assertTrue(model.sendReport(""));
     }
 
-    //Online output model tests
+    /**
+     * Online output model tests start here
+     */
     @Test
     public void onOutCreateReport() {
 
