@@ -60,7 +60,7 @@ public class Main extends Application {
             new CurrencyController(model, outputModel);
         view = new CurrencyView(controller);
 
-        primaryStage.setWidth(1200);
+        primaryStage.setWidth(1300);
         primaryStage.setHeight(650);
         primaryStage.setScene(view.getScene());
         primaryStage.setTitle("Currency App");
