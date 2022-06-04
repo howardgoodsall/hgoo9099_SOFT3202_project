@@ -18,8 +18,8 @@ Milestone 2 Submission:
     SHA: 6f2143d0d589cafd2b534c5a5c69f98334e13860
     URI: https://github.sydney.edu.au/hgoo9099/SCD2_2022/tree/6f2143d0d589cafd2b534c5a5c69f98334e13860/major_project
 Milestone 2 Re-Submission:
-    SHA: b5021e896ea6a893001eb28301d8688558401e22
-    URI: https://github.sydney.edu.au/hgoo9099/SCD2_2022/tree/b5021e896ea6a893001eb28301d8688558401e22/major_project
+    SHA: fc5fdf6c72d0b04db3e4138bceda5442617ae699
+    URI: https://github.sydney.edu.au/hgoo9099/SCD2_2022/tree/fc5fdf6c72d0b04db3e4138bceda5442617ae699/major_project
 Exam Base Commit:
     SHA: N/A
     URI: N/A
