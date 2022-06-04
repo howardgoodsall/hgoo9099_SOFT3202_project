@@ -1,5 +1,8 @@
 package major_project.view;
 
+import major_project.model.CurrencyModel;
+import major_project.model.CurrencyOutput;
+
 import major_project.controller.CurrencyController;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -31,7 +34,7 @@ import javafx.scene.input.MouseEvent;
  * View handler class
  */
 public class CurrencyView {
-    public final CurrencyController controller;
+    //public final CurrencyController controller;
     private final Scene scene;
     private final BorderPane pane;
     public TableView mainTable;
@@ -41,9 +44,12 @@ public class CurrencyView {
     private boolean loggedIn = false;
     private String user = null;
     private String userColour = "0x111111";//Default colour
+    public final CurrencyModel model;
+    private final CurrencyOutput outputModel;
 
-    public CurrencyView(CurrencyController controller) {
-        this.controller = controller;
+    public CurrencyView(CurrencyModel model, CurrencyOutput outputModel) {
+        this.model = model;
+        this.outputModel = outputModel;
         loginScreen();
         this.pane = new BorderPane();
         this.scene = new Scene(this.pane);
@@ -140,7 +146,7 @@ public class CurrencyView {
         } else {
             this.theme = "black";
         }
-        this.controller.updateTheme(this.theme, this.user);
+        this.model.updateTheme(this.theme, this.user);
         this.scene.getRoot().setStyle(("-fx-base:"+this.theme));
     }
 
@@ -173,10 +179,10 @@ public class CurrencyView {
         this.mainTable.getColumns().addAll(currencyCodeCol, nameCol,
             removeButtonCol);
         //Get user's colour preference
-        this.userColour = this.controller.getUserColour(this.user);
+        this.userColour = this.model.getUserColour(this.user);
         //Populate table with data from database
         ArrayList<String[]> userViewList =
-            this.controller.getViewingCurrencies(this.user);
+            this.model.getViewingCurrencies(this.user);
         if(userViewList != null) {
             for(int i=0; i<userViewList.size(); i++) {
                 String[] item = userViewList.get(i);
@@ -195,7 +201,7 @@ public class CurrencyView {
      */
     public void setUserColour(ColorPicker colorPicker) {
         this.userColour = colorPicker.getValue().toString();
-        this.controller.updateColour(this.userColour, this.user);
+        this.model.updateColour(this.userColour, this.user);
     }
 
     /**
@@ -219,14 +225,14 @@ public class CurrencyView {
      */
     public void clearMainTable() {
         this.mainTable.getItems().clear();
-        this.controller.clearViewingTable(this.user);
+        this.model.clearViewingTable(this.user);
     }
 
     /**
      * Button function to clear database cache
      */
     public void clearCache() {
-        this.controller.clearCache();
+        this.model.clearCache();
     }
 
     /**
@@ -248,7 +254,7 @@ public class CurrencyView {
      */
     public void updateToLabel(String fromCurrCode, String toCurrCode,
         String amount, Label toLabel) {
-        String value = this.controller.currConversion(fromCurrCode, toCurrCode,
+        String value = this.model.currConversion(fromCurrCode, toCurrCode,
             amount);
 
         //Following has been adapted from https://stackoverflow.com/questions/13784333/platform-runlater-and-task-in-javafx
@@ -268,9 +274,9 @@ public class CurrencyView {
         String amount, Label exRate, String exRateResult) {
         String rate = exRateResult;
         if(exRateResult == null) {
-            rate = this.controller.getExchangeRate(fromCurrCode,
+            rate = this.model.getExchangeRate(fromCurrCode,
                 toCurrCode);
-            this.controller.updateRate(Double.parseDouble(rate),
+            this.model.updateRate(Double.parseDouble(rate),
                 fromCurrCode, toCurrCode);
         }
         final String newLabel = String.format(" Rate: %s ", rate);
@@ -301,7 +307,7 @@ public class CurrencyView {
             amount, toLabel));
         t1.start();
 
-        String exRateResult = this.controller.getExchangeRateCache(fromCurrCode,
+        String exRateResult = this.model.getExchangeRateCache(fromCurrCode,
             toCurrCode);
         if(exRateResult != null) {
             ButtonType cacheFetchBtn =
@@ -340,7 +346,7 @@ public class CurrencyView {
         ObservableList<CurrencyDisplay> rows = this.mainTable.getItems();
         for(int i=0; i<rows.size(); i++) {
             if(rows.get(i).getCurrencyCode().equals(currencyName)) {
-                this.controller.removeViewCurrency(rows.get(i).getCurrencyCode(),
+                this.model.removeViewCurrency(rows.get(i).getCurrencyCode(),
                     this.user);
                 this.mainTable.getItems().remove(rows.get(i));
                 return;
@@ -376,7 +382,7 @@ public class CurrencyView {
         //Check if each country has supported currencies and add them to the list
         for(int i=0; i<selectedCountries.size(); i++) {
             ArrayList<String[]> allCurrenciesForCountry =
-                this.controller.supportedCurrencies(selectedCountries.get(i)
+                this.model.supportedCurrencies(selectedCountries.get(i)
                 .getLocale().getDisplayCountry());
             if(allCurrenciesForCountry != null) {
                 for(int j=0; j<allCurrenciesForCountry.size(); j++) {
@@ -396,7 +402,7 @@ public class CurrencyView {
                         CurrencyDisplay newRow = new CurrencyDisplay(currData[0],
                             currData[1], removeBtn);
                         Platform.runLater(() -> addRowToMainTable(newRow));
-                        this.controller.insertViewCurrency(
+                        this.model.insertViewCurrency(
                             newRow.getCurrencyCode(), newRow.getName(),
                             this.user);
                     }
@@ -432,8 +438,11 @@ public class CurrencyView {
      */
     public void createReport(Button sendReportButton, String curr1Name,
         String curr1Code, String curr2Name, String curr2Code, String curr1Val) {
-        this.controller.createAndSendReport(curr1Name, curr1Code,
-            curr2Name, curr2Code, curr1Val);
+        String report = this.outputModel.createReport(
+            curr1Name, curr1Code, curr2Name, curr2Code,
+            this.model.getExchangeRate(curr1Code, curr2Code), curr1Val,
+            this.model.currConversion(curr1Code, curr2Code, curr1Val));
+        this.outputModel.sendReport(report);
     }
 
     /**

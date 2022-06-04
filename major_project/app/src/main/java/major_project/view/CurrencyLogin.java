@@ -29,7 +29,7 @@ public class CurrencyLogin {
     public void loginAction(String username, String password,
         Button loginButton) {
         String pwdHash = DigestUtils.sha1Hex(password);//Hash pwd as soon as it recieves it
-        String result = view.controller.login(username, pwdHash);
+        String result = view.model.login(username, pwdHash);
         if(result == null) {
             Alert alertError = new Alert(Alert.AlertType.ERROR);
             alertError.setHeaderText("Wrong username or password");
@@ -50,7 +50,7 @@ public class CurrencyLogin {
     public void signUpAction(String username, String password,
         Button loginButton) {
         String pwdHash = DigestUtils.sha1Hex(password);
-        if(view.controller.signUp(username, pwdHash)) {
+        if(view.model.signUp(username, pwdHash)) {
             loginAction(username, password, loginButton);
         } else {
             Alert alertError = new Alert(Alert.AlertType.ERROR);
