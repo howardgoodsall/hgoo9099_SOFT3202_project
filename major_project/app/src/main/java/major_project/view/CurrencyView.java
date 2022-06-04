@@ -31,11 +31,12 @@ import javafx.scene.input.MouseEvent;
  * View handler class
  */
 public class CurrencyView {
-    private final CurrencyController controller;
+    public final CurrencyController controller;
     private final Scene scene;
     private final BorderPane pane;
-    private TableView mainTable;
-    private final String fontStyle = "-fx-font: 16 arial;";
+    public TableView mainTable;
+    private final String fontStyle =
+        "-fx-font: 16 arial; -fx-background-radius: 15px;";
     private String theme = "white";
     private boolean loggedIn = false;
     private String user = null;
@@ -55,90 +56,37 @@ public class CurrencyView {
     }
 
     /**
-     * Perform login, alert if can't login, otherwise it closes login screen
-     * and opens main screen
+     * Set values after login
      */
-    public void loginAction(String username, String password,
-        Button loginButton) {
-        String pwdHash = DigestUtils.sha1Hex(password);//Hash pwd as soon as it recieves it
-        String result = this.controller.login(username, pwdHash);
-        if(result == null) {
-            Alert alertError = new Alert(Alert.AlertType.ERROR);
-            alertError.setHeaderText("Wrong username or password");
-            alertError.setTitle("Wrong username or password");
-            alertError.showAndWait();
-        } else {
-            this.theme = result;
-            this.loggedIn = true;
-            this.user = username;
-            ((Stage)loginButton.getScene().getWindow()).close();
-        }
-    }
-
-    /**
-     * Action for sign up button, alert if username already exists
-     */
-    public void signUpAction(String username, String password,
-        Button loginButton) {
-        String pwdHash = DigestUtils.sha1Hex(password);
-        if(this.controller.signUp(username, pwdHash)) {
-            loginAction(username, password, loginButton);
-        } else {
-            Alert alertError = new Alert(Alert.AlertType.ERROR);
-            alertError.setHeaderText("Username already exists");
-            alertError.setTitle("Username already exists");
-            alertError.showAndWait();
-        }
+    public void setLogin(String username, String theme) {
+        this.theme = theme;
+        this.loggedIn = true;
+        this.user = username;
     }
 
     /**
      * Display login screen before main screen
      */
     public void loginScreen() {
-        TextField username = new TextField();
-        TextField password = new TextField();
-        Button loginButton = new Button();
-        Label usernameLabel = new Label("username");
-        usernameLabel.setStyle(fontStyle);
-        Label passwordLabel = new Label("password");
-        passwordLabel.setStyle(fontStyle);
-        loginButton.setText("Login");
-        loginButton.setStyle(fontStyle);
-        loginButton.setOnAction((event) -> loginAction(username.getText(),
-            password.getText(), loginButton));
-        Button signUpButton = new Button();
-        signUpButton.setText("Sign up");
-        signUpButton.setStyle(fontStyle);
-        signUpButton.setOnAction((event) -> signUpAction(username.getText(),
-            password.getText(), loginButton));
-        VBox loginBox = new VBox();
-        loginBox.setPadding(new Insets(20, 20, 20, 20));
-        loginBox.getChildren().addAll(usernameLabel, username, passwordLabel,
-            password, loginButton, signUpButton);
-        BorderPane secondaryPane = new BorderPane();
-        secondaryPane.setPadding(new Insets(20, 20, 20, 20));
-        secondaryPane.setCenter(loginBox);
-        Scene secondaryScene = new Scene(secondaryPane);
-        Stage secondaryStage = new Stage();
-        secondaryStage.setWidth(500);
-        secondaryStage.setHeight(300);
-        secondaryStage.setScene(secondaryScene);
-        secondaryStage.setTitle("Login");
-        secondaryStage.showAndWait();
+        CurrencyLogin login = new CurrencyLogin(this, fontStyle);
+        login.loginScreen();
     }
-
     /**
      * Set up layout and buttons
      */
     public void initialise() {
         this.mainTable = new TableView<TableColumn>();
+        Insets spacer = new Insets(10, 10, 10, 20);
         HBox conversionBox = conversionBoxInit();
         this.pane.setBottom(conversionBox);
         this.pane.setAlignment(conversionBox, Pos.CENTER);
+        this.pane.setMargin(conversionBox, spacer);
         initCurrencyList();
         this.pane.setCenter(this.mainTable);
-        this.pane.setPadding(new Insets(20, 20, 20, 20));
-        this.pane.setRight(sideBoxInit());
+        this.pane.setPadding(spacer);
+        VBox sideBox = sideBoxInit();
+        this.pane.setRight(sideBox);
+        this.pane.setMargin(sideBox, spacer);
         Menu m = new Menu("Menu");
         MenuItem m1 = new MenuItem("About");
         m1.setOnAction((event) -> aboutButton());
@@ -147,11 +95,14 @@ public class CurrencyView {
         mb.getMenus().add(m);
         HBox topPanel = new HBox();
         ToggleButton themebtn = new ToggleButton("Change theme");
+        themebtn.setStyle(fontStyle);
         themebtn.setOnAction((event) -> changeThemeButton());
         ToggleGroup group = new ToggleGroup();
         themebtn.setToggleGroup(group);
         topPanel.getChildren().addAll(mb, themebtn);
+        topPanel.setSpacing(10);
         this.pane.setTop(topPanel);
+        this.pane.setMargin(topPanel, spacer);
     }
 
     /**
@@ -251,98 +202,17 @@ public class CurrencyView {
      * initialise the side box, with world map, clear table and clear cache tables
      */
     public VBox sideBoxInit() {
-        Button worldMapButton = new Button();
-        worldMapButton.setOnAction((event) -> mapPopUp());
-        worldMapButton.setText("Open World Map");
-        worldMapButton.setStyle(fontStyle);
-        worldMapButton.setMinWidth(160);
-
-        Button clearBtn = new Button("Clear Table");
-        clearBtn.setMinWidth(160);
-        clearBtn.setOnAction((event) -> clearMainTable());
-        clearBtn.setStyle(fontStyle);
-
-        Button clearCacheBtn = new Button("Clear Cache");
-        clearCacheBtn.setMinWidth(160);
-        clearCacheBtn.setOnAction((event) -> clearCache());
-        clearCacheBtn.setStyle(fontStyle);
-
-        Label colourPickerLabel = new Label("""
-
-
-        World Map Background Colour:
-        """);
-        colourPickerLabel.setStyle(fontStyle);
-
-        final ColorPicker colorPicker = new ColorPicker(Color.web(this.userColour));
-        colorPicker.setOnAction((event) ->setUserColour(colorPicker));
-        colorPicker.setStyle(fontStyle);
-
-        VBox sidePanel = new VBox();
-        sidePanel.getChildren().addAll(worldMapButton, clearBtn, clearCacheBtn,
-            colourPickerLabel, colorPicker);
-        sidePanel.setPadding(new Insets(50, 20, 20, 20));
-        return sidePanel;
+        return CurrencySideBox.sideBoxInit(this, Color.web(this.userColour),
+            fontStyle);
     }
 
     /**
      * initialise the conversion field at the bottom of the pane
      */
     public HBox conversionBoxInit() {
-        HBox hbox = new HBox();
-        ComboBox<String> fromDropDown = new ComboBox<String>();
-        fromDropDown.setStyle(fontStyle);
-        ComboBox<String> toDropDown = new ComboBox<String>();
-        toDropDown.setStyle(fontStyle);
-        ObservableList<CurrencyDisplay> rows = this.mainTable.getItems();
-        this.mainTable.getItems().addListener(new ListChangeListener<Object>() {
-            @Override
-            public void onChanged(Change<?> change) {
-                fromDropDown.getItems().clear();
-                toDropDown.getItems().clear();
-                for(int i=0; i<rows.size(); i++) {
-                    fromDropDown.getItems().add(rows.get(i).getCurrencyCode());
-                    toDropDown.getItems().add(rows.get(i).getCurrencyCode());
-                }
-            }
-        });
-
-        TextField fromTextField = new TextField();
-        fromTextField.setStyle(fontStyle);
-        Label fromLabel = new Label();
-        fromLabel.setText("             Convert ");
-        fromLabel.setStyle(fontStyle);
-        Label middleLabel = new Label();
-        middleLabel.setText("   To   ");
-        middleLabel.setStyle(fontStyle);
-        Label toLabel = new Label();
-        toLabel.setText("    ->              ");
-        toLabel.setStyle(fontStyle);
-        Label exRate = new Label();
-        exRate.setText(" Rate:    ");
-        exRate.setStyle(fontStyle);
-
-        Button calculateBtn = new Button("Calculate");
-        calculateBtn.setStyle(fontStyle);
-        calculateBtn.setOnAction((event) -> doConversion(
-            (String)fromDropDown.getValue(), (String)toDropDown.getValue(),
-            fromTextField.getText(), toLabel, exRate));
-
-        Button sendReportButton = new Button("Send Report");
-        sendReportButton.setStyle(fontStyle);
-        sendReportButton.setOnAction((event) -> sendReport(sendReportButton,
-            getCurrNameFromCode((String)fromDropDown.getValue()),
-            (String)fromDropDown.getValue(),
-            getCurrNameFromCode((String)toDropDown.getValue()),
-            (String)toDropDown.getValue(),
-            fromTextField.getText(), exRate.getText()));
-
-        hbox.getChildren().addAll(fromLabel, fromDropDown, fromTextField,
-            middleLabel, toDropDown, toLabel, exRate, calculateBtn,
-            sendReportButton);
-        return hbox;
+        CurrencyConversionBox convBox = new CurrencyConversionBox(this);
+        return convBox.conversionBoxInit(fontStyle);
     }
-
 
     /**
      * Button function to clear main table
@@ -434,13 +304,24 @@ public class CurrencyView {
         String exRateResult = this.controller.getExchangeRateCache(fromCurrCode,
             toCurrCode);
         if(exRateResult != null) {
-            Alert alertRefresh = new Alert(Alert.AlertType.CONFIRMATION);
+            ButtonType cacheFetchBtn =
+                new ButtonType("Use local data from cache",
+                ButtonBar.ButtonData.CANCEL_CLOSE);
+            ButtonType apiFetchBtn =
+                new ButtonType("Fetch new data from CurrencyScoop",
+                ButtonBar.ButtonData.OK_DONE);
+            Alert alertRefresh = new Alert(Alert.AlertType.WARNING,
+                "",
+                apiFetchBtn, cacheFetchBtn);
             alertRefresh.setHeaderText("Cache found for this exchange rate. Refresh exchange rate?");
             alertRefresh.setTitle("Cache Hit");
             alertRefresh.getDialogPane().setStyle("-fx-base:"+this.theme);
             Optional<ButtonType> result = alertRefresh.showAndWait();
-            if (result.isPresent() && result.get() == ButtonType.OK){
+            if (result.isPresent() && result.get() == apiFetchBtn){
                 exRateResult = null;
+            } else {
+                String newLabel = String.format(" Rate: %s ", exRateResult);
+                exRate.setText(newLabel);
             }
 
         }
@@ -515,8 +396,9 @@ public class CurrencyView {
                         CurrencyDisplay newRow = new CurrencyDisplay(currData[0],
                             currData[1], removeBtn);
                         Platform.runLater(() -> addRowToMainTable(newRow));
-                        this.controller.insertViewCurrency(newRow.getCurrencyCode(),
-                            newRow.getName(), this.user);
+                        this.controller.insertViewCurrency(
+                            newRow.getCurrencyCode(), newRow.getName(),
+                            this.user);
                     }
                 }
             }  else {
@@ -531,7 +413,8 @@ public class CurrencyView {
      * Handle world map pop up
      */
     public void mapPopUp() {
-        CurrencyWorldMap worldMap = new CurrencyWorldMap(theme, this.userColour);
+        CurrencyWorldMap worldMap = new CurrencyWorldMap(theme, this.userColour,
+            this.fontStyle);
         Stage mapStage = worldMap.mapPopUp();
         mapStage.showAndWait();
         ObservableList<WorldMapView.Country> selectedCountries = worldMap

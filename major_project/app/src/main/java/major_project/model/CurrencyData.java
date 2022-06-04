@@ -17,18 +17,22 @@ public class CurrencyData {
             this.currency_code = currency_code;
     }
 
+    /** return currency name */
     public String getCurrencyName() {
         return this.currency_name;
     }
 
+    /** return countries for this currency*/
     public String[] getCountries() {
         return this.countries;
     }
 
+    /** return decimal units (not used)*/
     public String getDecimalUnits() {
         return this.decimal_units;
     }
 
+    /** return currency code */
     public String getCurrencyCode() {
         return this.currency_code;
     }

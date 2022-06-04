@@ -25,11 +25,13 @@ public class CurrencyWorldMap {
     private String theme;
     private final Color colour;
     private boolean clickFlag = false;
+    private String fontStyle;
 
-    public CurrencyWorldMap(String theme, String userColour) {
+    public CurrencyWorldMap(String theme, String userColour, String fontStyle) {
         worldMap = new WorldMapView();
         this.theme = theme;
         this.colour = Color.web(userColour);
+        this.fontStyle = fontStyle;
     }
 
     /**
@@ -42,60 +44,11 @@ public class CurrencyWorldMap {
         worldMap.setStyle("-fx-base:"+this.theme);
         worldMap.setBackground(new Background(new BackgroundFill(
             this.colour, null, null)));
-
-        //Following is part of an implementation for changing colours of each individual country
-        //Doing this however has some problems that can't be solved using the current
-        //implementation of the WorldMapView class provided by controlsfx.
-        //Mainly the multi-select using shift-click would have to be removed.
-        //https://edstem.org/au/courses/7942/discussion/865379
-
-        /*
-        String backgroundColour = "0x111111";
-        if(this.theme.equals("white") ||
-            this.colour.toString().compareTo("0x444444") < 0) {//This changes the background colour so that it always contrasts with the chosen colour
-            backgroundColour = "0xeeeeee";
-        }
-        worldMap.setBackground(new Background(new BackgroundFill(
-            Color.web(backgroundColour), null, null)));
-        worldMap.setCountrySelectionMode​(WorldMapView.SelectionMode.MULTIPLE);
-        //Following lines adapted from https://github.com/controlsfx/controlsfx/issues/1091
-        worldMap.setCountryViewFactory((country) -> {
-            CountryView view = new CountryView(country);
-            view.fillProperty().set(this.colour);
-            EventHandler<MouseEvent> mouseEvents =
-                new EventHandler<MouseEvent>() {
-                    @Override
-                    public void handle(MouseEvent event) {
-                        //view.fillProperty().set(Color.WHITE);
-                        if(event.getEventType() == MouseEvent.MOUSE_EXITED) {
-                            if(view.getFill().equals(getOppColour())) {
-                                view.fillProperty().set(getColour());
-                            }
-                        } else if(event.getEventType() == MouseEvent.MOUSE_ENTERED) {
-                            if(view.getFill().equals(getColour())) {
-                                view.fillProperty().set(getOppColour());
-                            }
-                        } else if(event.getEventType() == MouseEvent.MOUSE_CLICKED) {
-                            if(view.getFill().equals(Color.BLACK)) {
-                                view.fillProperty().set(getColour());
-                            } else {
-                                view.fillProperty().set(Color.BLACK);
-                            }
-                        }
-                    }
-                };
-            view.setOnMouseEntered​(mouseEvents);
-            view.setOnMouseExited​(mouseEvents);
-            view.setOnMouseClicked(mouseEvents);
-
-            //view.strokeWidthProperty().set(1);
-            return view;
-        });
-        */
         BorderPane secondaryPane = new BorderPane();
         secondaryPane.setCenter(worldMap);
         Label infoLabel = new Label();
         infoLabel.setText("Press shift to select multiple countries, then close the window.");
+        infoLabel.setStyle(fontStyle);
         secondaryPane.setBottom(infoLabel);
         secondaryPane.setStyle("-fx-base:"+this.theme);
         Scene secondaryScene = new Scene(secondaryPane);
