@@ -67,9 +67,9 @@ public class CurrencyLogin {
         TextField username = new TextField();
         TextField password = new TextField();
         Button loginButton = new Button();
-        Label usernameLabel = new Label("username");
+        Label usernameLabel = new Label("Username");
         usernameLabel.setStyle(fontStyle);
-        Label passwordLabel = new Label("password");
+        Label passwordLabel = new Label("Password");
         passwordLabel.setStyle(fontStyle);
         loginButton.setText("Login");
         loginButton.setStyle(fontStyle);
@@ -84,6 +84,7 @@ public class CurrencyLogin {
         loginBox.setPadding(new Insets(20, 20, 20, 20));
         loginBox.getChildren().addAll(usernameLabel, username, passwordLabel,
             password, loginButton, signUpButton);
+        loginBox.setSpacing(10);
         BorderPane secondaryPane = new BorderPane();
         secondaryPane.setPadding(new Insets(20, 20, 20, 20));
         secondaryPane.setCenter(loginBox);

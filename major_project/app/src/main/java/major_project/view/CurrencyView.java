@@ -3,7 +3,6 @@ package major_project.view;
 import major_project.model.CurrencyModel;
 import major_project.model.CurrencyOutput;
 
-import major_project.controller.CurrencyController;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.scene.control.*;
@@ -34,7 +33,6 @@ import javafx.scene.input.MouseEvent;
  * View handler class
  */
 public class CurrencyView {
-    //public final CurrencyController controller;
     private final Scene scene;
     private final BorderPane pane;
     public TableView mainTable;
