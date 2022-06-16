@@ -44,6 +44,7 @@ public class CurrencyView {
     private String userColour = "0x111111";//Default colour
     public final CurrencyModel model;
     private final CurrencyOutput outputModel;
+    private CurrencyObserver observer;
 
     public CurrencyView(CurrencyModel model, CurrencyOutput outputModel) {
         this.model = model;
@@ -86,6 +87,7 @@ public class CurrencyView {
         this.pane.setAlignment(conversionBox, Pos.CENTER);
         this.pane.setMargin(conversionBox, spacer);
         initCurrencyList();
+        this.observer = new CurrencyObserver(this.mainTable);//Initialise observer
         this.pane.setCenter(this.mainTable);
         this.pane.setPadding(spacer);
         VBox sideBox = sideBoxInit();
@@ -164,18 +166,26 @@ public class CurrencyView {
             new TableColumn<CurrencyView, String>("Currency Code");
         currencyCodeCol.setCellValueFactory(new PropertyValueFactory<>(
             "currencyCode"));
-        currencyCodeCol.setMinWidth(400);
+        currencyCodeCol.setMinWidth(300);
         TableColumn<CurrencyView, String> nameCol =
             new TableColumn<CurrencyView, String>("Name");
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
-        nameCol.setMinWidth(500);
+        nameCol.setMinWidth(400);
+
+        //New column for selecting the special deal currency
+        TableColumn<CurrencyView, Button> specialButtonCol =
+            new TableColumn<CurrencyView, Button>("Special Deal");
+        specialButtonCol.setMinWidth(200);
+        specialButtonCol.setCellValueFactory(new PropertyValueFactory<>(
+            "specialBtn"));
+
         TableColumn<CurrencyView, Button> removeButtonCol =
             new TableColumn<CurrencyView, Button>("");
-        removeButtonCol.setMinWidth(200);
+        removeButtonCol.setMinWidth(100);
         removeButtonCol.setCellValueFactory(new PropertyValueFactory<>(
             "removeBtn"));
         this.mainTable.getColumns().addAll(currencyCodeCol, nameCol,
-            removeButtonCol);
+            specialButtonCol, removeButtonCol);
         //Get user's colour preference
         this.userColour = this.model.getUserColour(this.user);
         //Populate table with data from database
@@ -187,8 +197,13 @@ public class CurrencyView {
                 Button removeBtn = new Button();
                 removeBtn.setText("X");
                 removeBtn.setOnAction((event) -> removeItem(item[0]));
+
+                Button specialBtn = new Button();
+                specialBtn.setText("  ");
+                specialBtn.setOnAction((event) -> setSpecialDeal(item[0]));
+
                 CurrencyDisplay newRow = new CurrencyDisplay(item[0], item[1],
-                    removeBtn);
+                    specialBtn, removeBtn);
                 this.mainTable.getItems().add(newRow);
             }
         }
@@ -254,13 +269,16 @@ public class CurrencyView {
         String amount, Label toLabel) {
         String value = this.model.currConversion(fromCurrCode, toCurrCode,
             amount);
+        Double valueDouble = Double.parseDouble(value);
+        valueDouble = valueDouble * this.observer.checkSpecial(toCurrCode);
+        String updatedValue = String.format("%.3f", valueDouble);
 
         //Following has been adapted from https://stackoverflow.com/questions/13784333/platform-runlater-and-task-in-javafx
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
                 toLabel.setText(String.format(" ->   %s %s ",
-                value, toCurrCode));
+                updatedValue, toCurrCode));
             }
         });
     }
@@ -277,7 +295,11 @@ public class CurrencyView {
             this.model.updateRate(Double.parseDouble(rate),
                 fromCurrCode, toCurrCode);
         }
-        final String newLabel = String.format(" Rate: %s ", rate);
+        Double rateDouble = Double.parseDouble(rate);
+        rateDouble = rateDouble * this.observer.checkSpecial(toCurrCode);
+        String updatedRate = String.format("%.3f", rateDouble);
+
+        final String newLabel = String.format(" Rate: %s ", updatedRate);
         //Following has been adapted from https://stackoverflow.com/questions/13784333/platform-runlater-and-task-in-javafx
         Platform.runLater(new Runnable() {
             @Override
@@ -324,7 +346,10 @@ public class CurrencyView {
             if (result.isPresent() && result.get() == apiFetchBtn){
                 exRateResult = null;
             } else {
-                String newLabel = String.format(" Rate: %s ", exRateResult);
+                Double rateDouble = Double.parseDouble(exRateResult);
+                rateDouble = rateDouble * this.observer.checkSpecial(toCurrCode);
+                String updatedRate = String.format("%.3f", rateDouble);
+                String newLabel = String.format(" Rate: %s ", updatedRate);
                 exRate.setText(newLabel);
             }
 
@@ -397,8 +422,14 @@ public class CurrencyView {
                         Button removeBtn = new Button();
                         removeBtn.setText("X");
                         removeBtn.setOnAction((event) -> removeItem(currData[0]));
+
+                        Button specialBtn = new Button();
+                        specialBtn.setText("  ");
+                        specialBtn.setOnAction((event) ->
+                            setSpecialDeal(currData[0]));
+
                         CurrencyDisplay newRow = new CurrencyDisplay(currData[0],
-                            currData[1], removeBtn);
+                            currData[1], specialBtn, removeBtn);
                         Platform.runLater(() -> addRowToMainTable(newRow));
                         this.model.insertViewCurrency(
                             newRow.getCurrencyCode(), newRow.getName(),
@@ -436,10 +467,20 @@ public class CurrencyView {
      */
     public void createReport(Button sendReportButton, String curr1Name,
         String curr1Code, String curr2Name, String curr2Code, String curr1Val) {
+
+        Double rateDouble = Double.parseDouble(
+            this.model.getExchangeRate(curr1Code, curr2Code));
+        rateDouble = rateDouble * this.observer.checkSpecial(curr2Code);
+        String updatedRate = String.format("%.3f", rateDouble);
+
+        Double valueDouble = Double.parseDouble(
+            this.model.currConversion(curr1Code, curr2Code, curr1Val));
+        valueDouble = valueDouble * this.observer.checkSpecial(curr2Code);
+        String updatedValue = String.format("%.3f", valueDouble);
+
         String report = this.outputModel.createReport(
             curr1Name, curr1Code, curr2Name, curr2Code,
-            this.model.getExchangeRate(curr1Code, curr2Code), curr1Val,
-            this.model.currConversion(curr1Code, curr2Code, curr1Val));
+            updatedRate, curr1Val, updatedValue);
         this.outputModel.sendReport(report);
     }
 
@@ -461,5 +502,12 @@ public class CurrencyView {
         Thread t1 = new Thread(() -> createReport(sendReportButton,
             curr1Name, curr1Code, curr2Name, curr2Code, curr1Val));
         t1.start();
+    }
+
+    /**
+     * Set the special deal currency (calls to the observer)
+     */
+    public void setSpecialDeal(String currCode) {
+        this.observer.setSpecial(currCode);
     }
 }
