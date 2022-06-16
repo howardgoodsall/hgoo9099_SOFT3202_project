@@ -24,8 +24,8 @@ Exam Base Commit:
     SHA: fc5fdf6c72d0b04db3e4138bceda5442617ae699
     URI: https://github.sydney.edu.au/hgoo9099/SCD2_2022/tree/fc5fdf6c72d0b04db3e4138bceda5442617ae699/major_project
 Exam Submission Commit:
-    SHA: N/A
-    URI: N/A
+    SHA: 6d41ce32673775c1e7ea482981ca1aeee0a5dec3
+    URI: https://github.sydney.edu.au/hgoo9099/SCD2_2022/tree/6d41ce32673775c1e7ea482981ca1aeee0a5dec3/major_project
 
 
 Instructions and Notes:
